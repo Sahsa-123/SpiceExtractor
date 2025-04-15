@@ -1,7 +1,3 @@
-.settings{
-    height: var(--settings-section-height);
-  }
-  
 .settings__form{
     display: flex;
     height: 100%;
@@ -15,23 +11,3 @@
     flex-basis: 100%;
     margin: 0;
 }
-  
-.settings__fieldset{
-    padding: 2px;
-    border: 1px solid black;
-}
-/*=========================================================REWRITE HARDCODE==========================================================
-/* dynamic */
-.fieldset{
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    padding: 10px;
-}   
-  
-.fieldset__interractive-block{
-    display: flex;
-    justify-content: space-between;
-}
-/* dynamic */
-  

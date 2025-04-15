@@ -3,9 +3,20 @@
     flex-direction: column;
     justify-content: space-between;
     padding: 10px;
+    border: 1px solid black;
 }   
 
 .fieldset__interractive-block{
     display: flex;
     justify-content: space-between;
 }
+
+.fieldset__input-block{
+    overflow: auto;
+    max-height: 80%;
+}
+
+.fieldset__input-wrapper:not(:last-child){
+    margin-bottom: 10px;
+}
+  

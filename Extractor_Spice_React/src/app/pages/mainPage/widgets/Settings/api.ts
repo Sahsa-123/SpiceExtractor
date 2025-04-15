@@ -14,5 +14,6 @@ export type settingsPropps = {
         btnAcceptAll:btnProps,
         btnRejectAll:btnProps
     },
-    syncFunc:()=>void
+    syncFunc:()=>void,
+    outerStyles?: string|null 
 }

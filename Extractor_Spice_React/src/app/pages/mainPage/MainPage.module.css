@@ -6,3 +6,7 @@
     gap: var(--main-flex-gap);
     /* inner content organisation */
   }
+
+.settings{
+  height: var(--settings-section-height);
+}

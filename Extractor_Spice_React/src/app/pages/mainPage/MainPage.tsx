@@ -59,7 +59,7 @@ export const MainPage = ()=>{
             <div>
             <Button>Отправить данные</Button>
             </div>
-            <Settings {...settingsConfig}/>
+            <Settings outerStyles={styles["settings"]}{...settingsConfig}/>
         </main>
     )
 }
