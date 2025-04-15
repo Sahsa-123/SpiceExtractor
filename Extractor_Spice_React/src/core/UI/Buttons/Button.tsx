@@ -1,0 +1,21 @@
+import { classNameConverter } from "../../helpers";
+import { btnProps } from "./api";
+import styles from "./Button.module.css"
+
+
+export const Button:React.FC<btnProps> = ({clickHandler=null, children, styleModification=[], type="button"})=>{
+    const BASICCLASS = "btn"
+    const className = classNameConverter(styles, styleModification, BASICCLASS)
+
+    const handleClick = (e:React.MouseEvent<HTMLButtonElement>) => {
+        if (clickHandler) {
+            clickHandler(e); 
+        }
+    };
+
+    return(
+        <button type={type} onClick={handleClick} className={className}>
+            {children}
+        </button>
+    )
+}

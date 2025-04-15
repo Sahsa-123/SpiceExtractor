@@ -1,0 +1,11 @@
+/* to make main stratchable */
+.layout{
+    height: 100vh;
+    /* make stratchable inner content */
+    display: flex;
+    flex-direction: column;
+    /* make stratchable inner content */
+    gap: var(--page-gap);
+    padding: var(--page-safty-padding-y) 0;/* safety gap */
+  }
+  

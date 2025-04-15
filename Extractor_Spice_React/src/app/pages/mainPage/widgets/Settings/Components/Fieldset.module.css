@@ -1,0 +1,11 @@
+.fieldset{
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 10px;
+}   
+
+.fieldset__interractive-block{
+    display: flex;
+    justify-content: space-between;
+}

@@ -1,0 +1,45 @@
+/* glob */
+:root{
+    /* general */
+    --container-horizontal-padding: 25px;
+    --page-safty-padding-y: 10px;
+    --page-gap:10px;
+    /* general */
+  
+    /*btn*/
+    --btn-font-size: 1rem;
+    --btn-capital-font-size: 1.4375rem;
+  
+    --btn-border-radius: 0.5em;
+  
+    --btn-padding-y: 0.5em;
+    --btn-padding-x: 1em;
+    /*btn*/
+  
+    /* header */
+    --header-menu-gap-x: 10px;
+    /* header */
+  
+    /* main */
+    --main-flex-gap:20px;
+    /* main */
+  
+    /* graph */
+    --graph-section-height: 70%;
+    /* graph */
+  
+   /* settings */
+   --settings-section-height: 30%;
+   --settings-form-gap: 15px;
+   /* settings */
+  
+    /* colors */
+    /* colors */
+  
+    /* typography */
+    --standard-text-font-size:1rem;
+  
+    --list-font-size:1.125rem;
+    /* typography */
+  }
+  

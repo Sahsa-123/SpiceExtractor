@@ -1,0 +1,8 @@
+.fieldset__input-block{
+    overflow: auto;
+    max-height: 80%;
+}
+  
+.fieldset__input-wrapper:not(:last-child){
+    margin-bottom: 10px;
+}
