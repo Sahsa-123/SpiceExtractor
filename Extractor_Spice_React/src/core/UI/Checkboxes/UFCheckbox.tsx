@@ -7,7 +7,8 @@ export const UFCheckbox: React.FC<UFCheckboxI> = ({
     text,
     register,
     registerOptions=null,
-    outerStyles=null
+    outerStyles=null,
+    isChecked=false
     // styleModification
 })=>{
     // const BASICCLASS = "btn"
@@ -16,7 +17,7 @@ export const UFCheckbox: React.FC<UFCheckboxI> = ({
     const registerReturn = registerOptions?register(name, registerOptions):register(name)
     return(
         <div className={outerStyles||""}>
-            <input type="checkbox" value={value} {...registerReturn} id={id}/>
+            <input type="checkbox" checked={isChecked} value={value} {...registerReturn} id={id}/>
             <label htmlFor={id}>{text}</label>
         </div>
     )

@@ -1,27 +1,25 @@
-import { FieldValues, SubmitHandler, useForm, UseFormGetValues, UseFormRegister } from "react-hook-form"
-import { Container } from "../../../../../core/templates/Container/Container"
+import { FieldValues, useForm, UseFormRegister } from "react-hook-form"
 import { settingsPropps } from "./api"
 import styles from "./Settings.module.css"
 import { Fieldset } from "./Components/Fieldset"
 import { fieldsetI } from "./Components/api"
-import { useEffect } from "react"
 
-export const Settings: React.FC<settingsPropps>=({config,syncFunc, outerStyles=null})=>{
-    const{ register, handleSubmit, watch } = useForm()
+export const Settings: React.FC<settingsPropps>=({config, syncFunc, outerStyles=null})=>{
+    const{ register } = useForm()
     const fieldsets = []
     for(const i of (Object.keys(config.fieldsets))){
         fieldsets.push(<Fieldset {...createFieldsetConfig(config, i, register)}/>)
     }
-
+    /*
     const formState = watch();
     useEffect(()=>{
         console.log(formState)
     },[formState])
     const onSubmit = (data) => console.log(data)
-    
+    */
     return (
     <section className={outerStyles||""}>
-        <form onSubmit={()=>handleSubmit(onSubmit)} className={styles["settings__form"]} id="settings-form">
+        <form className={styles["settings__form"]} id="settings-form">
             {fieldsets}
           </form>
     </section>

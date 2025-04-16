@@ -1,8 +1,10 @@
+import { useQuery } from "@tanstack/react-query"
 import { Button } from "../../../core/UI/Buttons/Button"
 import styles from "./MainPage.module.css"
 import { Graph } from "./widgets/Graph/Graph"
 import { settingsPropps } from "./widgets/Settings/api"
 import { Settings } from "./widgets/Settings/Settings"
+import chartSettingsGET from "./getSettings"
 
 export const MainPage = ()=>{
     const data = {
@@ -53,13 +55,23 @@ export const MainPage = ()=>{
         },
         syncFunc:()=>console.log("Синхронизация")
     }
+    const queryData = useQuery({queryKey:["r"], queryFn:()=>chartSettingsGET()})
+    if(queryData.data instanceof Error || !queryData.data?.isSuccessful){
+        return(
+            <>Упс</>
+        )
+    }
+    console.log(queryData.data)
     return(
-        <main className={styles.main} id="app">
-            <Graph/>
-            <div>
-            <Button>Отправить данные</Button>
-            </div>
-            <Settings outerStyles={styles["settings"]}{...settingsConfig}/>
-        </main>
+        <>
+        Данные получены
+        </>
+        // <main className={styles.main} id="app">
+        //     <Graph/>
+        //     <div>
+        //     <Button>Отправить данные</Button>
+        //     </div>
+        //     <Settings outerStyles={styles["settings"]}{...settingsConfig}/>
+        // </main>
     )
 }
