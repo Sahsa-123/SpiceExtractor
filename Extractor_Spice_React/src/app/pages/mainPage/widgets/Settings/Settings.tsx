@@ -3,6 +3,7 @@ import { settingsPropps } from "./api"
 import styles from "./Settings.module.css"
 import { Fieldset } from "./Components/Fieldset"
 import { fieldsetI } from "./Components/api"
+import { useEffect } from "react"
 
 export const Settings: React.FC<settingsPropps>=({config, syncFunc, outerStyles=null})=>{
     const{ register } = useForm()
@@ -10,13 +11,12 @@ export const Settings: React.FC<settingsPropps>=({config, syncFunc, outerStyles=
     for(const i of (Object.keys(config.fieldsets))){
         fieldsets.push(<Fieldset {...createFieldsetConfig(config, i, register)}/>)
     }
-    /*
-    const formState = watch();
-    useEffect(()=>{
-        console.log(formState)
-    },[formState])
-    const onSubmit = (data) => console.log(data)
-    */
+    
+    // const formState = watch();
+    // useEffect(()=>{
+    //     console.log(formState)
+    // },[formState])
+    
     return (
     <section className={outerStyles||""}>
         <form className={styles["settings__form"]} id="settings-form">
@@ -41,8 +41,9 @@ function createFieldsetConfig(
             register: register,
             })
         ),
-        leftBtnProps:config.btnAcceptAll,
+        leftBtnProps: config.btnAcceptAll,
         rightBtnProps: config.btnRejectAll
     }
 }
+
 

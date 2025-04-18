@@ -55,23 +55,24 @@ export const MainPage = ()=>{
         },
         syncFunc:()=>console.log("Синхронизация")
     }
-    const queryData = useQuery({queryKey:["r"], queryFn:()=>chartSettingsGET()})
-    if(queryData.data instanceof Error || !queryData.data?.isSuccessful){
-        return(
-            <>Упс</>
-        )
-    }
-    console.log(queryData.data)
+    // const queryData = useQuery({queryKey:["r"], queryFn:()=>chartSettingsGET()})
+    // if(queryData.data instanceof Error || !queryData.data?.isSuccessful){
+    //     return(
+    //         <>Упс</>
+    //     )
+    // }
+    // console.log(queryData.data)
+    //return(
+    //    {/* // <>
+        // Данные получены
+        // </>*/})
     return(
-        <>
-        Данные получены
-        </>
-        // <main className={styles.main} id="app">
-        //     <Graph/>
-        //     <div>
-        //     <Button>Отправить данные</Button>
-        //     </div>
-        //     <Settings outerStyles={styles["settings"]}{...settingsConfig}/>
-        // </main>
+        <main className={styles.main} id="app">
+            <Graph/>
+            <div>
+            <Button>Отправить данные</Button>
+            </div>
+            <Settings outerStyles={styles["settings"]}{...settingsConfig}/>
+        </main>
     )
 }
