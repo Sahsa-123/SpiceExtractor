@@ -12,6 +12,5 @@ export type UFCheckboxI = {
     register: registerType,
     registerOptions?: Parameters<registerType>[1]|null,
     outerStyles?:string|null
-    isChecked?: boolean
     // styleModification?:styleModificationType
 }

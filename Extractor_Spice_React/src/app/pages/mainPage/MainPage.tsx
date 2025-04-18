@@ -1,16 +1,15 @@
-import { useQuery } from "@tanstack/react-query"
 import { Button } from "../../../core/UI/Buttons/Button"
 import styles from "./MainPage.module.css"
 import { Graph } from "./widgets/Graph/Graph"
 import { settingsPropps } from "./widgets/Settings/api"
 import { Settings } from "./widgets/Settings/Settings"
-import chartSettingsGET from "./getSettings"
 
 export const MainPage = ()=>{
     const data = {
         "chip-number-fieldset": [
             {
-                "value": "Kristal_0p6_waf0chip1"
+                "value": "Kristal_0p6_waf0chip1",
+                "checked": "true"
             }
         ],
         "inner-nominal-fieldset": [
@@ -21,7 +20,8 @@ export const MainPage = ()=>{
                 "value": "D09p_W100_L1p7"
             },
             {
-                "value": "D16n_W35_L3p5"
+                "value": "D16n_W35_L3p5",
+                "checked":"true"
             },
             {
                 "value": "D19n_W100_L1p7"
@@ -46,11 +46,13 @@ export const MainPage = ()=>{
             fieldsets:data,
             btnAcceptAll:{
                 clickHandler:()=>console.log("Вы выбрали все"),
-                children: "Выбрать все"
+                children: "Выбрать все",
+                type:"button"
             },
             btnRejectAll:{
                 clickHandler:()=>console.log("Вы сбросили все"),
-                children: "сбросили все"
+                children: "сбросили все",
+                type:"button"
             }
         },
         syncFunc:()=>console.log("Синхронизация")
