@@ -5,7 +5,7 @@ import { settingsPropps } from "./widgets/Settings/api"
 import { Settings } from "./widgets/Settings/Settings"
 
 export const MainPage = ()=>{
-    const data = {
+    const data:settingsPropps["config"]["fieldsets"] = {
         "chip-number-fieldset": [
             {
                 "value": "Kristal_0p6_waf0chip1",
@@ -17,7 +17,8 @@ export const MainPage = ()=>{
                 "value": "D06p_W35_L3p5"
             },
             {
-                "value": "D09p_W100_L1p7"
+                "value": "D09p_W100_L1p7",
+                "checked": "true"
             },
             {
                 "value": "D16n_W35_L3p5",
@@ -37,7 +38,8 @@ export const MainPage = ()=>{
         ],
         "temperature-fieldset": [
             {
-                "value": "300K"
+                "value": "300K",
+                "checked": "true"
             }
         ]
     }
@@ -45,12 +47,10 @@ export const MainPage = ()=>{
         config:{
             fieldsets:data,
             btnAcceptAll:{
-                clickHandler:()=>console.log("Вы выбрали все"),
                 children: "Выбрать все",
                 type:"button"
             },
             btnRejectAll:{
-                clickHandler:()=>console.log("Вы сбросили все"),
                 children: "сбросили все",
                 type:"button"
             }

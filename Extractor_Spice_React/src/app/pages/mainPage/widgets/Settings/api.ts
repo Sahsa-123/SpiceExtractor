@@ -11,9 +11,13 @@ const chartSettingsDataSchema = z.record(z.string(), z.array(chartSettingsDataFi
 export type settingsPropps = {
     config: {
         fieldsets:z.infer<typeof chartSettingsDataSchema>,
-        btnAcceptAll:btnProps,
-        btnRejectAll:btnProps
+        btnAcceptAll:Omit<btnProps, "clickHandler">,
+        btnRejectAll:Omit<btnProps, "clickHandler">
     },
     syncFunc:()=>void,
     outerStyles?: string|null 
+}
+
+export type FormType = {
+    [i:string]:string[]|boolean
 }
