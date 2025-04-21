@@ -3,7 +3,7 @@ import { btnProps } from "./api";
 import styles from "./Button.module.css"
 
 
-export const Button:React.FC<btnProps> = ({clickHandler=null, children, styleModification=[], type="button"})=>{
+export const Button:React.FC<btnProps> = ({clickHandler=null, children, styleModification=[], type="button", disabled=false})=>{
     const BASICCLASS = "btn"
     const className = classNameConverter(styles, styleModification, BASICCLASS)
 
@@ -14,7 +14,7 @@ export const Button:React.FC<btnProps> = ({clickHandler=null, children, styleMod
     };
 
     return(
-        <button type={type} onClick={handleClick} className={className}>
+        <button disabled={disabled} type={type} onClick={handleClick} className={className}>
             {children}
         </button>
     )

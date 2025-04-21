@@ -5,12 +5,16 @@ import { Graph } from "./widgets/Graph/Graph";
 import { Settings } from "./widgets/Settings/Settings";
 import chartSettingsGET from "./getSettings";
 import {chartSettingsDataSchema,settingsPropps,} from "./widgets/Settings/api";
+import { PopUpWindow } from "./widgets/PopUpWindow/PopUpWindow";
+import { PopUpContainer } from "../../../core/Templates/popUpTemplate/PopUpTemplate";
+import { useState } from "react";
 
 export const MainPage = () => {
   const { data, status } = useQuery({
     queryKey: ["chart-settings"],
     queryFn: () => chartSettingsGET(),
   });
+  const [open, setOpen] = useState<boolean>(false)
 
   if (status === "error") return <div>Ошибка</div>;
   if (status === "pending") return <div>Загрузка...</div>;
@@ -41,7 +45,11 @@ export const MainPage = () => {
     <main className={styles.main} id="app">
       <Graph />
       <div>
-        <Button type="button">Отправить данные</Button>
+        <Button type="button" clickHandler={()=>setOpen((cur)=>!cur)}>Отправить данные</Button>
+        {!open||
+        <PopUpContainer>
+          <PopUpWindow/>
+        </PopUpContainer>}
       </div>
       <Settings outerStyles={styles.settings} {...settingsConfig} />
     </main>
