@@ -1,4 +1,4 @@
-import { Button } from "../../../core/UI/Buttons/Button"
+import { Button } from "../../../core/UI/Button"
 import styles from "./Header.module.css"
 
 export const Header = ()=>{

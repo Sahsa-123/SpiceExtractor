@@ -1,0 +1,38 @@
+{
+"chip-number-fieldset": [
+        {
+            "value": "Kristal_0p6_waf0chip1",
+            "checked": "true"
+        }
+    ],
+    "inner-nominal-fieldset": [
+        {
+            "value": "D06p_W35_L3p5"
+        },
+        {
+            "value": "D09p_W100_L1p7",
+            "checked": "true"
+        },
+        {
+            "value": "D16n_W35_L3p5",
+            "checked":"true"
+        },
+        {
+            "value": "D19n_W100_L1p7"
+        }
+    ],
+    "electric-fieldset": [
+        {
+            "value": "soi_dc_idvd"
+        },
+        {
+            "value": "soi_dc_idvg"
+        }
+    ],
+    "temperature-fieldset": [
+        {
+            "value": "300K",
+            "checked": "true"
+        }
+    ]
+}

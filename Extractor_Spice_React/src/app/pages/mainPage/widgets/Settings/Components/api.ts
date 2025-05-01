@@ -1,6 +1,6 @@
 // dependencies
-import { UFCheckboxI } from "../../../../../../core/UI/Checkboxes/api"
-import { btnProps } from "../../../../../../core/UI/Buttons/api"
+import { UFCheckboxI } from "../../../../../../core/UI/Checkboxes"
+import { btnProps } from "../../../../../../core/UI/Button"
 // dependencies
 
 export interface fieldsetI{

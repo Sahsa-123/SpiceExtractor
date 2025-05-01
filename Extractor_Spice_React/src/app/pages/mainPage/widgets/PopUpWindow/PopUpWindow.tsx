@@ -1,9 +1,10 @@
 import { useMutation } from "@tanstack/react-query";
-import { Button } from "../../../../../core/UI/Buttons";
+import { Button } from "../../../../../core/UI/Button";
 import { popUpWindowI } from "./api";
 import { useForm } from "react-hook-form";
+import  styles  from "./PopUpWindow.module.css"
 
-export const PopUpWindow: React.FC<popUpWindowI> = () => {
+export const PopUpWindow: React.FC<popUpWindowI> = ({syncFuncs}) => {
   const { register, handleSubmit, formState: { isSubmitting } } = useForm<{
     chartSettings: FileList;
   }>();
@@ -40,6 +41,7 @@ export const PopUpWindow: React.FC<popUpWindowI> = () => {
     try {
       const result = await uploadZip(formData);
       console.log('Файл успешно загружен:', result);
+      
       // Дополнительные действия после успешной загрузки
     } catch (error) {
       console.error('Ошибка загрузки:', error);
@@ -48,6 +50,7 @@ export const PopUpWindow: React.FC<popUpWindowI> = () => {
   };
 
   return (
+    <div className={styles.popUpWindow}>
     <form onSubmit={handleSubmit(onSubmit)}>
       <input
         type="file"
@@ -60,5 +63,7 @@ export const PopUpWindow: React.FC<popUpWindowI> = () => {
         {isSubmitting ? 'Идет отправка...' : 'Отправить данные'}
       </Button>
     </form>
+    <Button styleModification={["crossBtn"]} outerStyles={styles["popUpWindow__closeBtn"]} clickHandler={syncFuncs.close}/>
+    </div>
   );
 };

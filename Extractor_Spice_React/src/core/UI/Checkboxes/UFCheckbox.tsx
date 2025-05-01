@@ -9,8 +9,7 @@ export const UFCheckbox: React.FC<UFCheckboxI> = ({
     registerOptions=null,
     outerStyles=null,
 })=>{
-    // const BASICCLASS = "btn"
-    // const className = classNameConverter(styles, styleModification, BASICCLASS)
+    // добавить аналогичную Button.tsx поддержку стилей
 
     const registerReturn = registerOptions?register(name, registerOptions):register(name)
     return(

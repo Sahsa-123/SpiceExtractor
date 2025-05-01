@@ -1,4 +1,7 @@
 export interface popUpWindowI {
-    syncFunc:()=>void,
+    syncFuncs:{
+        close:()=>void,
+        updateData:()=>void
+    },
     outerStyles?: string|null 
 }

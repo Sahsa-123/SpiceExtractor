@@ -6,8 +6,9 @@ import { createDefaultForm, createFieldsets } from "./utils"
 
 
 export const Settings: React.FC<settingsPropps>=({config, syncFunc, outerStyles=null})=>{
+    console.log(createDefaultForm(config.fieldsets))
     const{ register, setValue, watch } = useForm<FormType>({defaultValues:createDefaultForm(config.fieldsets)})
-    useWatchFormState(watch, console.log)
+    useWatchFormState(watch, syncFunc)//логирование формы
     const fieldsets = createFieldsets(config, register, setValue)
     return (
     <section className={outerStyles||""}>

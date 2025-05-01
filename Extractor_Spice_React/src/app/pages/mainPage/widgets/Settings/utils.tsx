@@ -1,7 +1,7 @@
 import { FieldValues, UseFormRegister, UseFormSetValue } from "react-hook-form"
-import { FormType, settingsPropps } from "./api"
-import { fieldsetI } from "./Components/api"
-import { Fieldset } from "./Components/Fieldset"
+import { FormType, isNonNullConfig, nonNullConfig, settingsPropps } from "./api"
+import { fieldsetI } from "./Components"
+import { Fieldset } from "./Components"
 
 
 export function createFieldsets(
@@ -10,14 +10,17 @@ export function createFieldsets(
 	setValue: UseFormSetValue<FormType>
 ): React.ReactElement<typeof Fieldset>[] {
 	const fieldsets = []
-	for(const i of Object.keys(config.fieldsets)){
-		fieldsets.push(<Fieldset {...createFieldsetConfig(config, i, register, setValue)}/>)
+	if(isNonNullConfig(config)){
+		for(const i of Object.keys(config.fieldsets)){
+			fieldsets.push(<Fieldset {...createFieldsetConfig(config, i, register, setValue)}/>)
+		}
 	}
+	else fieldsets.push(<fieldset></fieldset>)
 	return fieldsets
 }
 
 function createFieldsetConfig(
-	config: settingsPropps["config"],
+	config: nonNullConfig,
 	fieldsetName: string,
 	register: UseFormRegister<FieldValues>,
 	setValue: UseFormSetValue<FieldValues>
@@ -49,13 +52,17 @@ function createFieldsetConfig(
 
 export function createDefaultForm(
     checkboxes: settingsPropps["config"]["fieldsets"]
-): FormType {
-	const defaultValues: {[index: string]: string[]} = {}
-	for(const i of Object.keys(checkboxes)){
-		const selected = checkboxes[i]
-			.filter((elem) => elem?.checked === "true")
-			.map((elem) => elem.value)
-		if(selected.length != 0) defaultValues[i] = selected
+): FormType|undefined {
+	if(checkboxes){
+		const defaultValues: {[index: string]: string[]} = {}
+		for(const i of Object.keys(checkboxes)){
+			const selected = checkboxes[i]
+				.filter((elem) => elem?.checked === "true")
+				.map((elem) => elem.value)
+			if(selected.length != 0) defaultValues[i] = selected
+		}
+		return defaultValues	
 	}
-	return defaultValues
+	return undefined
+	
 }

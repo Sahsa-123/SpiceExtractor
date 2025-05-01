@@ -1,0 +1,19 @@
+.popUpWindow{
+    position: relative;
+    background-color: white;
+    padding: 20px;
+}
+
+.popUpWindow>form{
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+
+    align-items: center;
+}
+
+.popUpWindow__closeBtn{
+    position: absolute;
+    top:0;
+    right:0
+}

@@ -1,7 +1,7 @@
 import { fieldsetI } from "./api";
 import styles from "./Fieldset.module.css";
 /*dependencies*/
-import { Button } from "../../../../../../core/UI/Buttons";
+import { Button } from "../../../../../../core/UI/Button";
 import { UFCheckbox } from "../../../../../../core/UI/Checkboxes";
 /*dependencies*/
 

@@ -1,6 +1,5 @@
 import {useForm} from "react-hook-form"
-// type permitedStyles = "flat-bottom"
-// type styleModificationType = permitedStyles[]
+
 
 type registerType = ReturnType<typeof useForm>["register"];
 
@@ -12,5 +11,4 @@ export type UFCheckboxI = {
     register: registerType,
     registerOptions?: Parameters<registerType>[1]|null,
     outerStyles?:string|null
-    // styleModification?:styleModificationType
 }

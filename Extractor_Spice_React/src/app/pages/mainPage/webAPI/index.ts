@@ -1,0 +1,1 @@
+export {getChartSettings} from "./getChartSettings"
