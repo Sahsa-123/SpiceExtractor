@@ -1,10 +1,10 @@
-import { Button } from "../../../core/UI/Button/Button";
+import { Button } from "../../../core/UI";
 import styles from "./MainPage.module.css";
 import { Graph } from "./widgets/Graph/Graph";
 import { Settings } from "./widgets/Settings/Settings";
 import { FormType,settingsPropps } from "./widgets/Settings/api";
 import { PopUpWindow } from "./widgets/PopUpWindow/PopUpWindow";
-import { PopUpTemplate } from "../../../core/Templates/popUpTemplate";
+import { PopUpTemplate } from "../../../core/Templates";
 import { useMainPage } from "./hooks";
 import { patchFieldsetsFormType } from "./state";
 import { popUpWindowI } from "./widgets/PopUpWindow/api";
@@ -55,10 +55,13 @@ export const MainPage = () => {
         <Graph plotData={pageState.fieldsets}/>
         <div>
           <Button type="button" clickHandler={()=>dispatch({type:"togglePopUp"})}>Отправить данные</Button>
-          {!pageState.isPopUpOpen||
+          {/* {!pageState.isPopUpOpen||
           <PopUpTemplate color="black">
             <PopUpWindow {...popUpWindowConfig}/>
-          </PopUpTemplate>}
+          </PopUpTemplate>} */}
+          <PopUpTemplate color="black" isVisible={pageState.isPopUpOpen}>
+            <PopUpWindow {...popUpWindowConfig}/>
+          </PopUpTemplate>
         </div>
         <Settings outerStyles={styles.settings} {...settingsConfig} />
       </main>

@@ -1,22 +1,20 @@
-.popupTemplate{
+.popupTemplate {
     position: fixed;
     top: 0;
     left: 0;
     width: 100vw;
     height: 100vh;
-  
-    /* background: rgba(0, 0, 0, 0.6); */
-  
+
     display: flex;
     align-items: center;
     justify-content: center;
-  
-    /* opacity: 0; */
-    /* pointer-events: none; */
-    transition: opacity 0.3s ease-in-out;
+    
+    opacity: 0; /* Начальное состояние - прозрачный */
+    visibility: hidden; /* Скрываем из DOM, но оставляем место */
+    transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
 }
 
-.popupTemplate > *{
-    display: inline-block;
-    /* background-color: white; */
+.popupTemplate.visible {
+    opacity: 1; /* Видимый */
+    visibility: visible; /* Показываем */
 }

@@ -1,5 +1,5 @@
 import {z} from "zod"
-import { btnProps } from "../../../../../core/UI/Button/api"
+import { btnProps } from "../../../../../core/UI"
 import { chartSettingsDataSchema } from "../../state"
 
 export type settingsPropps = {

@@ -1,7 +1,7 @@
 // import JSONResponseConverter from "../JSONResponseConverter/JSONResponseConverter.ts";
 // import GETRequest from "../webAPIRequests/GETRequest.ts";
-import JSONResponseConverter from "../../../../../../core/webAPI/JSONConverters/JSONResponseConverter.ts";
-import { GETRequest } from "../../../../../../core/webAPI/Requests/GETRequest.ts";
+import { JSONResponseConverter } from "../../../../../../core/webAPI";
+import { GETRequest } from "../../../../../../core/webAPI";
 import { chartSettingsDataSchema } from "../../../state.ts";
 import { z } from "zod";
 

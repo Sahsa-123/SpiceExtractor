@@ -1,4 +1,3 @@
-
 /*
 class name: BadJSON
 
@@ -8,8 +7,8 @@ purpose: represent error ocured during execution of JSON.parse()
 
 structure of used surrounding:-
 
-arguments: getAPIName
-getAPIName:string - name of function which send request to server
+arguments: message
+  message:string - message of error returned by JSON.parse()
 
 output: object with fields
 stack - standard Error class property
@@ -23,11 +22,11 @@ structure of created elements:-
 export class BadJSON extends Error{
     clientMessage:string[];
   
-    constructor(getAPIName:string){
-      super(`Reason: JSON from server parsing error in ${getAPIName}`);
+    constructor(message:string){
+      super(`Reason: JSON from server parsing error in ${message}`);
       this.name = "BadJSON";
       this.clientMessage = [
-        "Ошибка при конвертации JSON"
+        "Возникли непредвиденные технические неполадки"
       ];
     }
   }

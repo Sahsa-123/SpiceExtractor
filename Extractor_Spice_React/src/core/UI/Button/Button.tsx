@@ -15,9 +15,7 @@ export const Button:React.FC<btnProps> = ({
     const className = classNameConverter(styles, styleModification, BASICCLASS)+(outerStyles||"")
 
     const handleClick = (e:React.MouseEvent<HTMLButtonElement>) => {
-        if (clickHandler) {
-            clickHandler(e); 
-        }
+        if (clickHandler)clickHandler(e); 
     };
 
     return(

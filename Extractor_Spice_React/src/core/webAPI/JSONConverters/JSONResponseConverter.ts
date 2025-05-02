@@ -13,8 +13,6 @@ helping functions: -
 */
 import { BadJSON } from "./errors";
 import { JSONResponseConverterReturnTypes } from "./api";
-
-export { JSONResponseConverter as default };
 //==================================MODULE DESCRIPTION===========================================
 
 //==================================MODULE MAIN FUNCTION=========================================
@@ -40,10 +38,11 @@ export async function JSONResponseConverter(response:Response):Promise<JSONRespo
       data: converted,
     }
   }
-  catch{
+  catch(e){
+    const error = e instanceof Error ? e : new Error(String(e));
     return {
-      isSuccessful:true,
-      data: new BadJSON("json convertion error"),
+      isSuccessful:false,
+      data: new BadJSON(error.message),
     }
   }
 }

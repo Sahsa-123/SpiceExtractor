@@ -1,2 +1,2 @@
-export {UFCheckbox} from "./UFCheckbox"
-export type { UFCheckboxI} from "./api"
+export { UFCheckbox } from "./UFCheckbox"
+export type { UFCheckboxI } from "./api"

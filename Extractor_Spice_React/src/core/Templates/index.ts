@@ -1,0 +1,1 @@
+export {PopUpTemplate} from "./popUpTemplate"

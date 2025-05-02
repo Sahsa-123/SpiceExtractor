@@ -13,9 +13,9 @@ main function: getChartSettings
 
 helping functions:-
 */
-import { JSONResponseConverter } from "../../../../core/webAPI/JSONConverters";
+import { JSONResponseConverter } from "../../../../core/webAPI";
 import { schemaDismatch } from "../../../../core/Errors";
-import { GETRequest } from "../../../../core/webAPI/Requests";
+import { GETRequest } from "../../../../core/webAPI";
 import { getChartSettingsReturnTypes, settingsReturnSchema } from "./api";
 //==================================MODULE DESCRIPTION===========================================
 

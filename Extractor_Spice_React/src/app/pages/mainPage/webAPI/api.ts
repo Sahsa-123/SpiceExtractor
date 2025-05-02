@@ -1,6 +1,6 @@
 import {z} from "zod"
-import { RequestError } from "../../../../core/webAPI/Requests"
-import { BadJSON } from "../../../../core/webAPI/JSONConverters"
+import { RequestError } from "../../../../core/webAPI"
+import { BadJSON } from "../../../../core/webAPI"
 
 export const settingsReturnSchema = z.record(
     z.union(

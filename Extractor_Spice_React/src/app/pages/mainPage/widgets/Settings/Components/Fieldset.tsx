@@ -1,8 +1,8 @@
 import { fieldsetI } from "./api";
 import styles from "./Fieldset.module.css";
 /*dependencies*/
-import { Button } from "../../../../../../core/UI/Button";
-import { UFCheckbox } from "../../../../../../core/UI/Checkboxes";
+import { Button } from "../../../../../../core/UI";
+import { UFCheckbox } from "../../../../../../core/UI";
 /*dependencies*/
 
 export const Fieldset:React.FC<fieldsetI>=({checkboxes, leftBtnProps,rightBtnProps})=>{

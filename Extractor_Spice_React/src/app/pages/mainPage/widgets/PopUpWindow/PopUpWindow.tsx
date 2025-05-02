@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Button } from "../../../../../core/UI/Button";
+import { Button } from "../../../../../core/UI";
 import { popUpWindowI } from "./api";
 import { useForm } from "react-hook-form";
 import  styles  from "./PopUpWindow.module.css"

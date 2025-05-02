@@ -1,4 +1,14 @@
 .btn{
+    /*Переменные*/
+    --btn-font-size: 1rem;
+    --btn-capital-font-size: 1.4375rem;
+  
+    --btn-border-radius: 0.5em;
+  
+    --btn-padding-y: 0.5em;
+    --btn-padding-x: 1em;
+    /*Переменные*/
+    
     font-size: var(--btn-font-size);
     border: none;
     border-radius: var(--btn-border-radius);
