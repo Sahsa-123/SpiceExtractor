@@ -1,3 +1,4 @@
+import { z } from "zod";
 import { FormType, settingsPropps } from "./widgets/Settings/api";
 
 export function mainPageReducer(state:pageState, action: actionsT):pageState{
@@ -50,7 +51,7 @@ export function mainPageReducer(state:pageState, action: actionsT):pageState{
 /* Состояние страницу */
 type pageState={
     isPopUpOpen:boolean,
-    fieldsets: null | settingsPropps["config"]["fieldsets"],
+    fieldsets: null | z.infer<typeof chartSettingsDataSchema>,
     graph: string//перенастроить это надо 
 }
 
@@ -60,6 +61,12 @@ export const initialState:pageState={
     graph: "No plot"//перенастроить это надо 
 
 }
+
+const chartSettingsDataFieldSchema = z.object({
+    value: z.string(),
+    checked:z.optional(z.union([z.literal("true"),z.literal("false")]))
+})
+export const chartSettingsDataSchema = z.record(z.string(), z.array(chartSettingsDataFieldSchema))
 /* Состояние страницу */
 
 /*Типизация дествия*/

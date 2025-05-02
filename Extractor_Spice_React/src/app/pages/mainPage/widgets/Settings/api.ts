@@ -1,11 +1,6 @@
 import {z} from "zod"
 import { btnProps } from "../../../../../core/UI/Button/api"
-
-const chartSettingsDataFieldSchema = z.object({
-    value: z.string(),
-    checked:z.optional(z.union([z.literal("true"),z.literal("false")]))
-})
-export const chartSettingsDataSchema = z.record(z.string(), z.array(chartSettingsDataFieldSchema))
+import { chartSettingsDataSchema } from "../../state"
 
 export type settingsPropps = {
     config: {

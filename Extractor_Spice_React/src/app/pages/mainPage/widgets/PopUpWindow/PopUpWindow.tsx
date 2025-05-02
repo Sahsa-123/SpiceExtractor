@@ -1,4 +1,4 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "../../../../../core/UI/Button";
 import { popUpWindowI } from "./api";
 import { useForm } from "react-hook-form";
@@ -10,6 +10,7 @@ export const PopUpWindow: React.FC<popUpWindowI> = ({syncFuncs}) => {
   }>();
 
   // Мутация для отправки файла
+  const queryClient = useQueryClient();
   const { mutateAsync: uploadZip } = useMutation({
     mutationFn: async (formData: FormData) => {
       const response = await fetch('http://127.0.0.1:8000/upload-zip', {
@@ -22,7 +23,8 @@ export const PopUpWindow: React.FC<popUpWindowI> = ({syncFuncs}) => {
         throw new Error('Ошибка загрузки файла');
       }
       return response.json();
-    }
+    },
+    onSuccess:()=>queryClient.invalidateQueries({ queryKey: ["chart-settings"] })
   });
 
   // Обработчик отправки формы

@@ -2,12 +2,13 @@ import { Button } from "../../../core/UI/Button/Button";
 import styles from "./MainPage.module.css";
 import { Graph } from "./widgets/Graph/Graph";
 import { Settings } from "./widgets/Settings/Settings";
-import {chartSettingsDataSchema,FormType,settingsPropps,} from "./widgets/Settings/api";
+import { FormType,settingsPropps } from "./widgets/Settings/api";
 import { PopUpWindow } from "./widgets/PopUpWindow/PopUpWindow";
 import { PopUpTemplate } from "../../../core/Templates/popUpTemplate";
 import { useMainPage } from "./hooks";
 import { patchFieldsetsFormType } from "./state";
 import { popUpWindowI } from "./widgets/PopUpWindow/api";
+import { chartSettingsDataSchema } from "./state";
 
 export const MainPage = () => {
   const {pageState, status, dispatch} = useMainPage()
@@ -51,7 +52,7 @@ export const MainPage = () => {
 
     return (
       <main className={styles.main} id="app">
-        <Graph />
+        <Graph plotData={pageState.fieldsets}/>
         <div>
           <Button type="button" clickHandler={()=>dispatch({type:"togglePopUp"})}>Отправить данные</Button>
           {!pageState.isPopUpOpen||

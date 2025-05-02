@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useReducer } from "react";
 import { initialState, mainPageReducer } from "./state";
 import { getChartSettings } from "./webAPI";
-import { chartSettingsDataSchema } from "./widgets/Settings/api";
+import { chartSettingsDataSchema } from "./state"; 
 
 export function useMainPage(){
 const [pageState, dispatch] = useReducer(mainPageReducer,initialState);
