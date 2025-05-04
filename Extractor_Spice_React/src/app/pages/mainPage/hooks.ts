@@ -5,7 +5,7 @@ import { getChartSettings } from "./webAPI";
 import { chartSettingsDataSchema } from "./state"; 
 
 export function useMainPage(){
-const [pageState, dispatch] = useReducer(mainPageReducer,initialState);
+  const [pageState, dispatch] = useReducer(mainPageReducer,initialState);
 
   const { data, status } = useQuery({
     queryKey: ["chart-settings"],

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { FormType, settingsPropps } from "./widgets/Settings/api";
+import { settingsPropps } from "./widgets/Settings/api";
 
 export function mainPageReducer(state:pageState, action: actionsT):pageState{
     console.log("Вызвали редюсер")
@@ -87,7 +87,10 @@ type actionT = {
 /*Типизация дествия*/
 
 /*Конверторы типов*/
-export function patchFieldsetsFormType(oldData:pageState["fieldsets"], newData:FormType):pageState["fieldsets"]{
+export function patchFieldsetsFormType(
+    oldData:pageState["fieldsets"], 
+    newData:{[i: string]: boolean | string[];}
+):pageState["fieldsets"]{
   if(!oldData)return null
 
   const data={} as NonNullable<pageState["fieldsets"]>

@@ -1,1 +1,0 @@
-export {PopUpTemplate} from "./popUpTemplate"

@@ -1,4 +1,5 @@
 import {UFCheckboxI} from "./api"
+import styles from "./Checkbox.module.css"
 
 export const UFCheckbox: React.FC<UFCheckboxI> = ({
     id,
@@ -13,9 +14,9 @@ export const UFCheckbox: React.FC<UFCheckboxI> = ({
 
     const registerReturn = registerOptions?register(name, registerOptions):register(name)
     return(
-        <div className={outerStyles||""}>
+        <div className={`${styles.checkbox} ${outerStyles||""}`}>
             <input type="checkbox" value={value} {...registerReturn} id={id}/>
-            <label htmlFor={id}>{text}</label>
+            <label className={styles.label} htmlFor={id}>{text}</label>
         </div>
     )
 }

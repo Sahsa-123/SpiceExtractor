@@ -1,10 +1,10 @@
-// dependencies
+/*core dependencies*/
 import { UFCheckboxI } from "../../../../../../core/UI"
 import { btnProps } from "../../../../../../core/UI"
-// dependencies
+/*core dependencies*/
 
 export interface fieldsetI{
-    checkboxes:UFCheckboxI[],
+    checkboxes: UFCheckboxI[],
     leftBtnProps: btnProps,
     rightBtnProps: btnProps, 
 }

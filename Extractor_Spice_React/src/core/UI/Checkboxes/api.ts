@@ -1,8 +1,5 @@
 import {useForm} from "react-hook-form"
 
-
-type registerType = ReturnType<typeof useForm>["register"];
-
 export type UFCheckboxI = {
     outerStyles?:string|null
 
@@ -14,3 +11,5 @@ export type UFCheckboxI = {
     register: registerType,
     registerOptions?: Parameters<registerType>[1]|null,
 }
+
+type registerType = ReturnType<typeof useForm>["register"];

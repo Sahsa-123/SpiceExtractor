@@ -24,7 +24,7 @@ export const PopUpWindow: React.FC<popUpWindowI> = ({syncFuncs}) => {
       }
       return response.json();
     },
-    onSuccess:()=>queryClient.invalidateQueries({ queryKey: ["chart-settings"] })
+    onSuccess:()=>syncFuncs.updateData()
   });
 
   // Обработчик отправки формы

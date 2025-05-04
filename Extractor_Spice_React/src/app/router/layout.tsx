@@ -1,15 +1,15 @@
 import { Outlet } from "react-router"
 import { Header } from "./Header"
-import styles from "./layout.module.css"
+import { LayoutTemplate } from "./LayoutTemplate"
 
 
 export const BasicLayout = ()=>{
     {
         return(
-        <div className={styles.layout}>
+        <LayoutTemplate>
           <Header/>
           <Outlet/>
-        </div>
+        </LayoutTemplate>
         )
       }
 }

@@ -1,11 +1,20 @@
-/* to make main stratchable */
 .layout{
+    --page-safty-padding-y: 10px;
+    --page-gap:25px;
+  
     height: 100vh;
-    /* make stratchable inner content */
     display: flex;
     flex-direction: column;
-    /* make stratchable inner content */
+  
     gap: var(--page-gap);
     padding: var(--page-safty-padding-y) 0;/* safety gap */
-  }
-  
+}
+
+.layout > *:nth-child(1){
+    flex-grow: 0;
+}
+
+.layout > *:nth-child(2){
+    flex-grow: 1;
+}
+    

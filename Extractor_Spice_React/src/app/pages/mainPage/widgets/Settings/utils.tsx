@@ -12,10 +12,10 @@ export function createFieldsets(
 	const fieldsets = []
 	if(isNonNullConfig(config)){
 		for(const i of Object.keys(config.fieldsets)){
-			fieldsets.push(<Fieldset {...createFieldsetConfig(config, i, register, setValue)}/>)
+			fieldsets.push(<Fieldset key={i} {...createFieldsetConfig(config, i, register, setValue)}/>)
 		}
 	}
-	else fieldsets.push(<fieldset></fieldset>)
+	else fieldsets.push(<fieldset key={"empty"}></fieldset>)
 	return fieldsets
 }
 

@@ -1,12 +1,18 @@
 .main{
-    flex-grow: 1;/* stratchable block */
-    /* inner content organisation */
-    display: flex;
-    flex-direction: column;
-    gap: var(--main-flex-gap);
-    /* inner content organisation */
-  }
+  --main-flex-gap:20px;
 
-.settings{
+  display: flex;
+  flex-direction: column;
+  gap: var(--main-flex-gap);
+  padding: 0 25px;
+}
+
+.main__graph{
+  flex-grow: 1;
+}
+
+.main__settings{
+  --settings-section-height: 30%; 
+  width: 100%;
   height: var(--settings-section-height);
 }
