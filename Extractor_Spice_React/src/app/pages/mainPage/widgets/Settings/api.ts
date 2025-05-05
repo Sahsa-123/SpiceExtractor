@@ -1,26 +1,21 @@
-import {z} from "zod"
+/*core dependencies*/
 import { btnProps } from "../../../../../core/UI"
-import { fieldsetSchema } from "../../childIndex"
+/*core dependencies*/
+
+/*parent dependencies*/
+import { FieldsetsType } from "../../childIndex"
+/*parent dependencies*/
 
 export type settingsPropps = {
     config: {
-        fieldsets:z.infer<typeof fieldsetSchema>|null,
+        fieldsets:FieldsetsType,
         btnAcceptAll:Omit<btnProps, "clickHandler">,
         btnRejectAll:Omit<btnProps, "clickHandler">
     },
-    syncFunc:(data:FormType)=>void,
+    syncFunc:(data:SettingsSyncData)=>void,
     outerStyles?: string|null 
 }
 
-export type nonNullConfig = Omit<settingsPropps["config"], "fieldsets"> & {
-    fieldsets: NonNullable<settingsPropps["config"]["fieldsets"]>;
-};
-
-export function isNonNullConfig(config: settingsPropps["config"]):config is nonNullConfig{
-    if(config.fieldsets)return true
-    return false
-} 
-
-export type FormType = {
-    [i:string]:string[]|boolean
+export type SettingsSyncData = {
+    [i:string]:string[]|boolean|string
 }

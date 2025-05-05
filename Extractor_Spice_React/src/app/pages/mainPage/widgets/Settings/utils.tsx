@@ -1,13 +1,19 @@
-import { FieldValues, UseFormRegister, UseFormSetValue } from "react-hook-form"
-import { FormType, isNonNullConfig, nonNullConfig, settingsPropps } from "./api"
-import { fieldsetI } from "./Components"
-import { Fieldset } from "./Components"
+/*local dependecies*/
+import {SettingsSyncData, settingsPropps } from "./api"
+/*local dependecies*/
 
+/*inner modules*/
+import { fieldsetI, Fieldset } from "./Components"
+/*inner modules*/
+
+/*other*/
+import { FieldValues, UseFormRegister, UseFormSetValue } from "react-hook-form"
+/*other*/
 
 export function createFieldsets(
 	config: settingsPropps["config"],
-	register: UseFormRegister<FormType>,
-	setValue: UseFormSetValue<FormType>
+	register: UseFormRegister<SettingsSyncData>,
+	setValue: UseFormSetValue<SettingsSyncData>
 ): React.ReactElement<typeof Fieldset>[] {
 	const fieldsets = []
 	if(isNonNullConfig(config)){
@@ -19,6 +25,15 @@ export function createFieldsets(
 	return fieldsets
 }
 
+type nonNullConfig = Omit<settingsPropps["config"], "fieldsets"> & {
+    fieldsets: NonNullable<settingsPropps["config"]["fieldsets"]>;
+};
+
+function isNonNullConfig(config: settingsPropps["config"]):config is nonNullConfig{
+    if(config.fieldsets)return true
+    return false
+} 
+
 function createFieldsetConfig(
 	config: nonNullConfig,
 	fieldsetName: string,
@@ -29,7 +44,6 @@ function createFieldsetConfig(
 		checkboxes: config.fieldsets[fieldsetName]
 			.map((elem, index) => ({
 				id: `${fieldsetName}-${index}`,
-				outerKey: `${fieldsetName}-${index}`,
 				name: fieldsetName,
 				value: elem.value,
 				text: elem.value,
@@ -44,15 +58,15 @@ function createFieldsetConfig(
 		rightBtnProps: {
 			...config.btnRejectAll,
 			clickHandler: () => {
-				setValue(fieldsetName, [])
+				setValue(fieldsetName, false)
 			}
 		}
 	}
 }
-
+//======================================================================
 export function createDefaultForm(
     checkboxes: settingsPropps["config"]["fieldsets"]
-): FormType|undefined {
+):SettingsSyncData|undefined {
 	if(checkboxes){
 		const defaultValues: {[index: string]: string[]} = {}
 		for(const i of Object.keys(checkboxes)){

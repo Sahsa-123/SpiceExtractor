@@ -7,12 +7,15 @@
   padding: 0 25px;
 }
 
+.main>*{
+  width: 100%;
+}
+
 .main__graph{
   flex-grow: 1;
 }
 
 .main__settings{
   --settings-section-height: 30%; 
-  width: 100%;
   height: var(--settings-section-height);
 }

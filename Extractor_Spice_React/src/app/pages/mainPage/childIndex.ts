@@ -1,1 +1,1 @@
-export {fieldsetSchema} from "./state"
+export {type FieldsetsType} from "./state"

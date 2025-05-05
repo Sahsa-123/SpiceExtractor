@@ -1,64 +1,92 @@
 import { z } from "zod";
-
-export{ mainPageReducer, initialState, fieldsetSchema, patchFieldsetsFormType }
+import {SettingsSyncData} from "./widgets/Settings"
+export{ mainPageReducer, initialState, fieldsetSchema, type FieldsetsType}
 
 function mainPageReducer(state:pageState, action: actionsT):pageState{
-    console.log("Вызвали редюсер")
     switch(action.type){
-        case "togglePopUp":
-            return({
-                    ...state,
-                    isPopUpOpen:!state.isPopUpOpen
-                })
-        case "patchFieldsets":
-            return({
+        case "patchFieldsets":{
+                return({
                 ...state,
-                fieldsets:action.newFieldsets
-            })
-        case "addFieldsets":
-        {
-            if(!action.newFieldsets || !state){
-                return{
-                    ...state
-                }
-            }
-            if(!state["fieldsets"]){
-                return{
-                    ...state,
-                    fieldsets:action.newFieldsets
-                }
-            }
-            const fieldsets = {} as NonNullable<pageState["fieldsets"]>
-            for(const k of Object.keys(state["fieldsets"]) as Array<keyof pageState["fieldsets"]>){
-                fieldsets[k] = state["fieldsets"][k].map((cur)=>({...cur}))
-            }
-            for(const k of Object.keys(action.newFieldsets) as Array<keyof pageState["fieldsets"]>){
-                const uniqueObj = action.newFieldsets[k].filter((cur)=>{
-                    for(const i of fieldsets[k])if (i.value===cur.value) return false
-                    return true
+                fieldsets: patchFieldsets(state.fieldsets, action.newFieldsets)
                 })
-                uniqueObj.forEach((cur)=>fieldsets[k].push(cur))
             }
-            console.log(fieldsets)
-            return({
-                ...state,
-                "fieldsets":fieldsets
-            })
-        }
+        case "addFieldsets":{
+                if(!action.newFieldsets || !state){
+                    return{
+                        ...state
+                    }
+                }
+                if(!state["fieldsets"]){
+                    return{
+                        ...state,
+                        fieldsets:action.newFieldsets
+                    }
+                }
+                const data = addFieldsets(state["fieldsets"], action.newFieldsets)
+                return({
+                    ...state,
+                    "fieldsets":data
+                })
+            }
         default:
             throw Error('Unknown action: ' + action)
     }
 }
-/* Состояние страницы */
-type pageState={
-    isPopUpOpen:boolean,
-    fieldsets: null | z.infer<typeof fieldsetSchema>,
+
+function patchFieldsets(
+    oldData:pageState["fieldsets"], 
+    selectedData:pageState["fieldsets"]
+):pageState["fieldsets"]{
+    if(!oldData) return oldData
+    if(!selectedData) return oldData
+
+    const data={} as NonNullable<pageState["fieldsets"]>
+    for(const k of Object.keys(oldData) as Array<keyof pageState["fieldsets"]>){
+    data[k] = oldData[k]
+        .map((cur)=>{
+            if (k in selectedData){
+                for(const i of selectedData[k]){
+                    if(i.value===cur.value)return i
+                }
+                return{
+                    ...cur,
+                    checked:"false"
+                }
+            }
+            else{
+                return cur
+            }
+        })
+    }
+    return data
 }
 
-const initialState:pageState={
-    isPopUpOpen: false,
-    fieldsets: null,
+function addFieldsets(
+    oldFieldsets:NonNullable<pageState["fieldsets"]>, 
+    newFieldsets:NonNullable<pageState["fieldsets"]>
+):pageState["fieldsets"]{
+    const fieldsets = {} as NonNullable<pageState["fieldsets"]>
+    for(const k of Object.keys(oldFieldsets) as Array<keyof pageState["fieldsets"]>){
+        fieldsets[k] = oldFieldsets[k].map((cur)=>({...cur}))
+    }
+    for(const k of Object.keys(newFieldsets) as Array<keyof pageState["fieldsets"]>){
+        const uniqueObj = newFieldsets[k].filter((cur)=>{
+            for(const i of fieldsets[k])if (i.value===cur.value) return false
+            return true
+        })
+        uniqueObj.forEach((cur)=>fieldsets[k].push(cur))
+    }
+    return fieldsets
+}
+/* Состояние страницы */
+type pageState={
+    fieldsets: FieldsetsType,
+}
 
+type FieldsetsType = null | z.infer<typeof fieldsetSchema>
+
+const initialState:pageState={
+    fieldsets: null,
 }
 
 const fieldsetSchema = z.record(
@@ -72,12 +100,24 @@ const fieldsetSchema = z.record(
 )
 /* Состояние страницы */
 
-/*Типизация дествия*/
-type actionsT = popUpModificationAction|fieldsetsModificationAction
-
-type popUpModificationAction = actionT & {
-    type:"togglePopUp"
+/*Конверторы типов*/
+export function SettingsSyncToPatch(data:SettingsSyncData):pageState["fieldsets"]{
+    const converted={} as NonNullable<pageState["fieldsets"]>
+    for(const k of Object.keys(data) as Array<keyof pageState["fieldsets"]>){
+        if(typeof data[k]==="string"){
+            converted[k] = [{value:data[k],checked:"true"}] 
+        }
+        else if (typeof data[k] !=="boolean"){
+            converted[k] = data[k]
+            .map((cur)=>({value: cur, checked:"true"}))
+        }
+  }
+  return converted
 }
+/*Конверторы типов*/
+
+/*Типизация дествия*/
+type actionsT = fieldsetsModificationAction
 
 type fieldsetsModificationAction= actionT & {
     type:"patchFieldsets"|"addFieldsets",
@@ -88,23 +128,3 @@ type actionT = {
     type:string
 }
 /*Типизация дествия*/
-
-/*Конверторы типов*/
-function patchFieldsetsFormType(
-    oldData:pageState["fieldsets"], 
-    newData:{[i: string]: boolean | string[];}
-):pageState["fieldsets"]{
-  if(!oldData)return null
-
-  const data={} as NonNullable<pageState["fieldsets"]>
-  for(const k of Object.keys(oldData) as Array<keyof pageState["fieldsets"]>){
-    data[k] = oldData[k]
-        .map((cur)=>{
-            if (typeof newData[k]==="boolean") return {...cur, checked:`${newData[k]}`}
-            else if(newData[k].includes(cur.value)) return {...cur, checked:"true"}
-            else return {...cur, checked:"false"}
-        })
-  }
-  return data
-}
-/*Конверторы типов*/

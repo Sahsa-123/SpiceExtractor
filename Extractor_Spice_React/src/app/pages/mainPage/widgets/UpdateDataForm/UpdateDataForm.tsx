@@ -1,14 +1,21 @@
-import { useMutation } from "@tanstack/react-query";
+/*core dependencies*/
 import { Button } from "../../../../../core/UI";
-import { popUpWindowI } from "./api";
-import { useForm } from "react-hook-form";
-import  styles  from "./PopUpWindow.module.css"
+/*core dependencies*/
 
-export const PopUpWindow: React.FC<popUpWindowI> = ({syncFuncs}) => {
+/*local dependecies*/
+import { UpdateDataFormI } from "./api";
+import  styles  from "./UpdateDataForm.module.css"
+/*local dependecies*/
+
+/*other*/
+import { useMutation } from "@tanstack/react-query";
+import { useForm } from "react-hook-form";
+/*other*/
+
+export const UpdateDataForm: React.FC<UpdateDataFormI> = ({syncFunc}) => {
   const { register, handleSubmit, formState: { isSubmitting } } = useForm<{
     chartSettings: FileList;
   }>();
-  // Мутация для отправки файла
   const { mutateAsync: uploadZip } = useMutation({
     mutationFn: async (formData: FormData) => {
       const response = await fetch('http://127.0.0.1:8000/upload-zip', {
@@ -22,7 +29,7 @@ export const PopUpWindow: React.FC<popUpWindowI> = ({syncFuncs}) => {
       }
       return response.json();
     },
-    onSuccess:()=>syncFuncs.updateData()
+    onSuccess:()=>syncFunc()
   });
   // Обработчик отправки формы
   const onSubmit = async (data: { chartSettings: FileList }) => {
@@ -38,31 +45,24 @@ export const PopUpWindow: React.FC<popUpWindowI> = ({syncFuncs}) => {
     formData.append('file', file); // 'file' - ключ, ожидаемый сервером
 
     try {
-      const result = await uploadZip(formData);
-      console.log('Файл успешно загружен:', result);
-      
-      // Дополнительные действия после успешной загрузки
+      await uploadZip(formData);
     } catch (error) {
       console.error('Ошибка загрузки:', error);
       alert('Произошла ошибка при загрузке файла');
     }
   };
-
-  return (
-    <div className={styles.popUpWindow}>
-    <form onSubmit={handleSubmit(onSubmit)}>
-      <input
+return (
+    <form className={styles.form} onSubmit={handleSubmit(onSubmit)}>
+    <input
         type="file"
         accept=".zip"
         {...register("chartSettings", {
-          required: "Выберите файл для загрузки",
+        required: "Выберите файл для загрузки",
         })}
-      />
-      <Button type="submit" disabled={isSubmitting}>
-        {isSubmitting ? 'Идет отправка...' : 'Отправить данные'}
-      </Button>
+    />
+    <Button type="submit" disabled={isSubmitting}>
+        {isSubmitting ? 'Идет отправка...' : 'Отправить'}
+    </Button>
     </form>
-    <Button styleModification={["crossBtn"]} outerStyles={styles["popUpWindow__closeBtn"]} clickHandler={syncFuncs.close}/>
-    </div>
-  );
+);
 };

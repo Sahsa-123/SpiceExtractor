@@ -1,40 +1,40 @@
 /*core dependencies*/
-import { Button } from "../../../core/UI";
-import { CenteredContainer, PopUpTemplate } from "../../../core/Wrappers";
+import { CenteredContainer} from "../../../core/Wrappers";
 /*core dependencies*/
 
 /*local dependecies*/
 import styles from "./MainPage.module.css";
-import { fieldsetSchema, patchFieldsetsFormType} from "./state";
+import { SettingsSyncToPatch,  initialState, mainPageReducer } from "./state";
 import { useGetData } from "./hooks";
 /*local dependecies*/
 
 /*inner modules*/
 import { Graph } from "./widgets/Graph/Graph";
-import { Settings } from "./widgets/Settings/Settings";
-import { FormType,settingsPropps } from "./widgets/Settings/api";
-import { PopUpWindow } from "./widgets/PopUpWindow/PopUpWindow";
-import { popUpWindowI } from "./widgets/PopUpWindow/api";
-import { useQueryClient } from "@tanstack/react-query";
+import { Settings, SettingsSyncData, settingsPropps} from "./widgets/Settings";
+import { PagePopUpWindow, PagePopUpWindowI } from "./widgets/PagePopUpWindow";
+import { UpdateDataForm } from "./widgets/UpdateDataForm";
 /*inner modules*/
 
-/*added */
+/*other*/
+import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useReducer } from "react";
-import { initialState, mainPageReducer } from "./state";
-/*added */
+/*other*/
 
 export const MainPage = () => {
   /*state*/
   const [pageState, dispatch] = useReducer(mainPageReducer,initialState);
   /*state*/
   
+  /* data fetching */
   const{data, status} = useGetData(["chart-settings"])
   useEffect(() => {
     dispatch({
-      type: "patchFieldsets",
+      type: "addFieldsets",
       newFieldsets: data
     });
   }, [data]);
+  /* data fetching */
+
   const queryClient = useQueryClient();
 
   if(status === "success"){
@@ -50,34 +50,33 @@ export const MainPage = () => {
           type: "button",
         },
       },
-      syncFunc: (data:FormType) => {
-        const newData = patchFieldsetsFormType(pageState.fieldsets, data)
-        const parsedData = fieldsetSchema.safeParse(newData)
-        if(parsedData.success){
-          dispatch({
+      syncFunc: (data:SettingsSyncData) => {
+        console.log(data)
+        dispatch({
             type:"patchFieldsets",
-            newFieldsets:parsedData.data
-          })
-        }
+            newFieldsets:SettingsSyncToPatch(data)
+        })
       },
     };
 
-    const popUpWindowConfig:popUpWindowI = {
-      syncFuncs:{
-        close: ()=>dispatch({type:"togglePopUp"}),
-        updateData: ()=>queryClient.invalidateQueries({ queryKey: ["chart-settings"] })
-      }
+    const PagePopUpWindowConfig:PagePopUpWindowI["config"] = {
+        openBtn:{
+          children:"Отправить измерения"
+        },
+        closeBtn:{
+          children:"",
+          styleModification:["crossBtn"]
+        }
     }
 
     return (
       <main className={styles.main} id="app">
         <Graph outerStyles={styles["main__graph"]} plotData={pageState.fieldsets}/>
 
-        <CenteredContainer width="100%">
-          <Button type="button" clickHandler={()=>dispatch({type:"togglePopUp"})}>Отправить данные</Button>
-          <PopUpTemplate color="black" isVisible={pageState.isPopUpOpen}>
-            <PopUpWindow {...popUpWindowConfig}/>
-          </PopUpTemplate>
+        <CenteredContainer>
+          <PagePopUpWindow config={PagePopUpWindowConfig}>
+            <UpdateDataForm syncFunc={()=>queryClient.invalidateQueries({ queryKey: ["chart-settings"] })}/>
+          </PagePopUpWindow>
         </CenteredContainer>
 
         <Settings outerStyles={styles["main__settings"]} {...settingsConfig} />
