@@ -1,7 +1,8 @@
 import { z } from "zod";
-import { settingsPropps } from "./widgets/Settings/api";
 
-export function mainPageReducer(state:pageState, action: actionsT):pageState{
+export{ mainPageReducer, initialState, fieldsetSchema, patchFieldsetsFormType }
+
+function mainPageReducer(state:pageState, action: actionsT):pageState{
     console.log("Вызвали редюсер")
     switch(action.type){
         case "togglePopUp":
@@ -48,26 +49,28 @@ export function mainPageReducer(state:pageState, action: actionsT):pageState{
             throw Error('Unknown action: ' + action)
     }
 }
-/* Состояние страницу */
+/* Состояние страницы */
 type pageState={
     isPopUpOpen:boolean,
-    fieldsets: null | z.infer<typeof chartSettingsDataSchema>,
-    graph: string//перенастроить это надо 
+    fieldsets: null | z.infer<typeof fieldsetSchema>,
 }
 
-export const initialState:pageState={
+const initialState:pageState={
     isPopUpOpen: false,
-    fieldsets: null ,
-    graph: "No plot"//перенастроить это надо 
+    fieldsets: null,
 
 }
 
-const chartSettingsDataFieldSchema = z.object({
-    value: z.string(),
-    checked:z.optional(z.union([z.literal("true"),z.literal("false")]))
-})
-export const chartSettingsDataSchema = z.record(z.string(), z.array(chartSettingsDataFieldSchema))
-/* Состояние страницу */
+const fieldsetSchema = z.record(
+    z.string(), 
+    z.array(
+        z.object({
+            value: z.string(),
+            checked:z.optional(z.union([z.literal("true"),z.literal("false")]))
+        })
+    )
+)
+/* Состояние страницы */
 
 /*Типизация дествия*/
 type actionsT = popUpModificationAction|fieldsetsModificationAction
@@ -78,7 +81,7 @@ type popUpModificationAction = actionT & {
 
 type fieldsetsModificationAction= actionT & {
     type:"patchFieldsets"|"addFieldsets",
-    newFieldsets:settingsPropps["config"]["fieldsets"]
+    newFieldsets:pageState["fieldsets"]
 }
 
 type actionT = {
@@ -87,7 +90,7 @@ type actionT = {
 /*Типизация дествия*/
 
 /*Конверторы типов*/
-export function patchFieldsetsFormType(
+function patchFieldsetsFormType(
     oldData:pageState["fieldsets"], 
     newData:{[i: string]: boolean | string[];}
 ):pageState["fieldsets"]{

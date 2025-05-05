@@ -1,10 +1,10 @@
 import {z} from "zod"
 import { btnProps } from "../../../../../core/UI"
-import { chartSettingsDataSchema } from "../../state"
+import { fieldsetSchema } from "../../childIndex"
 
 export type settingsPropps = {
     config: {
-        fieldsets:z.infer<typeof chartSettingsDataSchema>|null,
+        fieldsets:z.infer<typeof fieldsetSchema>|null,
         btnAcceptAll:Omit<btnProps, "clickHandler">,
         btnRejectAll:Omit<btnProps, "clickHandler">
     },

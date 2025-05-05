@@ -5,8 +5,8 @@ import { CenteredContainer, PopUpTemplate } from "../../../core/Wrappers";
 
 /*local dependecies*/
 import styles from "./MainPage.module.css";
-import { chartSettingsDataSchema, patchFieldsetsFormType} from "./state";
-import { useMainPage } from "./hooks";
+import { fieldsetSchema, patchFieldsetsFormType} from "./state";
+import { useGetData } from "./hooks";
 /*local dependecies*/
 
 /*inner modules*/
@@ -18,13 +18,26 @@ import { popUpWindowI } from "./widgets/PopUpWindow/api";
 import { useQueryClient } from "@tanstack/react-query";
 /*inner modules*/
 
+/*added */
+import { useEffect, useReducer } from "react";
+import { initialState, mainPageReducer } from "./state";
+/*added */
+
 export const MainPage = () => {
-  const {pageState, status, dispatch} = useMainPage()
+  /*state*/
+  const [pageState, dispatch] = useReducer(mainPageReducer,initialState);
+  /*state*/
+  
+  const{data, status} = useGetData(["chart-settings"])
+  useEffect(() => {
+    dispatch({
+      type: "patchFieldsets",
+      newFieldsets: data
+    });
+  }, [data]);
   const queryClient = useQueryClient();
 
-  if (status === "error") return <div>Ошибка</div>;
-  if (status === "pending") return <div>Загрузка...</div>;
-  else{
+  if(status === "success"){
     const settingsConfig: settingsPropps = {
       config: {
         fieldsets: pageState.fieldsets,
@@ -38,11 +51,8 @@ export const MainPage = () => {
         },
       },
       syncFunc: (data:FormType) => {
-        console.log(data)
         const newData = patchFieldsetsFormType(pageState.fieldsets, data)
-        console.log(JSON.stringify(newData))
-        const parsedData = chartSettingsDataSchema.safeParse(newData)
-        console.log(parsedData.error)
+        const parsedData = fieldsetSchema.safeParse(newData)
         if(parsedData.success){
           dispatch({
             type:"patchFieldsets",
@@ -54,7 +64,7 @@ export const MainPage = () => {
 
     const popUpWindowConfig:popUpWindowI = {
       syncFuncs:{
-        close:()=>dispatch({type:"togglePopUp"}),
+        close: ()=>dispatch({type:"togglePopUp"}),
         updateData: ()=>queryClient.invalidateQueries({ queryKey: ["chart-settings"] })
       }
     }
@@ -73,5 +83,12 @@ export const MainPage = () => {
         <Settings outerStyles={styles["main__settings"]} {...settingsConfig} />
       </main>
     );
+  }
+  else{
+    return(
+      <CenteredContainer width="100%" height="100%">
+        {status==="pending"?"Loading...":"Error loading data"}
+      </CenteredContainer>
+    )
   }
 };
