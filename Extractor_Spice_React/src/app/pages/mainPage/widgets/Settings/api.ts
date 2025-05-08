@@ -1,10 +1,10 @@
-/*core dependencies*/
-import { btnProps } from "../../../../../core/UI"
-/*core dependencies*/
-
 /*parent dependencies*/
 import { FieldsetsType } from "../../childIndex"
 /*parent dependencies*/
+
+/*core dependencies*/
+import { btnProps } from "../../../../../core/UI"
+/*core dependencies*/
 
 export type settingsPropps = {
     config: {

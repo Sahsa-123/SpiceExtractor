@@ -1,7 +1,12 @@
-import { useQuery } from "@tanstack/react-query";
-import { useMemo} from "react";
+/*local dependecies*/
 import { getChartSettings } from "./webAPI";
 import { fieldsetSchema } from "./state"; 
+/*local dependecies*/
+
+/*other*/
+import { useQuery } from "@tanstack/react-query";
+import { useMemo} from "react";
+/*other*/
 
 export function useGetData(key:string[]){
   const { data, status } = useQuery({

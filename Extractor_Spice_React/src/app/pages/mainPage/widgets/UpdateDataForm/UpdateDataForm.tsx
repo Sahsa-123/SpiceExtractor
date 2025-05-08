@@ -13,7 +13,7 @@ import { useForm } from "react-hook-form";
 /*other*/
 
 export const UpdateDataForm: React.FC<UpdateDataFormI> = ({syncFunc}) => {
-  const { register, handleSubmit, formState: { isSubmitting } } = useForm<{
+  const { register, handleSubmit, formState: { isSubmitting },reset } = useForm<{
     chartSettings: FileList;
   }>();
   const { mutateAsync: uploadZip } = useMutation({
@@ -29,7 +29,10 @@ export const UpdateDataForm: React.FC<UpdateDataFormI> = ({syncFunc}) => {
       }
       return response.json();
     },
-    onSuccess:()=>syncFunc()
+    onSuccess:()=>{
+      reset()
+      syncFunc()
+    }
   });
   // Обработчик отправки формы
   const onSubmit = async (data: { chartSettings: FileList }) => {

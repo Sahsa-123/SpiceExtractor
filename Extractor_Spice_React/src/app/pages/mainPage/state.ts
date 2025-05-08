@@ -1,5 +1,11 @@
+/*inner modules*/
+import { SettingsSyncData } from "./widgets/Settings"
+/*inner modules*/
+
+/*other*/
 import { z } from "zod";
-import {SettingsSyncData} from "./widgets/Settings"
+/*other*/
+
 export{ mainPageReducer, initialState, fieldsetSchema, type FieldsetsType}
 
 function mainPageReducer(state:pageState, action: actionsT):pageState{

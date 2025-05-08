@@ -1,49 +1,39 @@
-//===================================MAIN SUGGESTIONS============================================
-//===================================MAIN SUGGESTIONS============================================
-
-//==================================MODULE DESCRIPTION===========================================
-/*
-purpose: convert JSON responses from fetch()
-
-dependencies: webAPIErrors
-
-main function: JSONResponseConverter
-
-helping functions: -
-*/
+/*local dependecies*/
 import { BadJSON } from "./errors";
 import { JSONResponseConverterReturnTypes } from "./api";
-//==================================MODULE DESCRIPTION===========================================
+/*local dependecies*/
 
 //==================================MODULE MAIN FUNCTION=========================================
 /*
-function name: JSONResponseConverter(response)
+  function name: JSONResponseConverter(response)
 
-purpose: convert fetch() responses from server to JSON
+  purpose: convert fetch() responses from server to JSON
 
-structure of used surrounding: -
+  structure of used surrounding: -
 
-arguments:response
-  response:Response - response returned by fetch()
+  arguments: response
+    response: Response - response returned by fetch()
 
-output: JSON of reponse
+  output: JSON of response
 
-structure of created elements: -
+  structure of created elements: -
 */
-export async function JSONResponseConverter(response:Response):Promise<JSONResponseConverterReturnTypes>{
-  try{
-    const converted = await response.json()
+export async function JSONResponseConverter(
+  response: Response
+): Promise<JSONResponseConverterReturnTypes> {
+  try {
+    const converted = await response.json();
     return {
-      isSuccessful:true,
+      isSuccessful: true,
       data: converted,
-    }
-  }
-  catch(e){
+    };
+  } catch (e) {
     const error = e instanceof Error ? e : new Error(String(e));
+    console.error(error);
     return {
-      isSuccessful:false,
+      isSuccessful: false,
       data: new BadJSON(error.message),
-    }
+    };
   }
 }
 //==================================MODULE MAIN FUNCTION=========================================
@@ -54,4 +44,4 @@ export async function JSONResponseConverter(response:Response):Promise<JSONRespo
 //=========================================DEVELOPED=============================================
 //=========================================DEVELOPED=============================================
 
-//===========================================OTHER================================================
+//===========================================OTHER===============================================

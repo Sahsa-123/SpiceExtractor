@@ -1,1 +1,0 @@
-export {getChartPlot} from "./getChartPlot"

@@ -9,7 +9,7 @@ import { useGetData } from "./hooks";
 /*local dependecies*/
 
 /*inner modules*/
-import { Graph } from "./widgets/Graph/Graph";
+import { Graph } from "./widgets/Graph";
 import { Settings, SettingsSyncData, settingsPropps} from "./widgets/Settings";
 import { PagePopUpWindow, PagePopUpWindowI } from "./widgets/PagePopUpWindow";
 import { UpdateDataForm } from "./widgets/UpdateDataForm";

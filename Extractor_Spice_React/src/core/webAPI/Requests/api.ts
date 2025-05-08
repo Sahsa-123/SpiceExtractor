@@ -1,14 +1,15 @@
-import { RequestError } from "./errors"
+import { RequestError } from "./errors";
 
-export type GETRequestReturnTypes = 
-    |GETRequestFailReturn
-    |GETRequestSuccessReturn
+export type GETRequestReturnTypes =
+  | GETRequestFailReturn
+  | GETRequestSuccessReturn;
 
 type GETRequestSuccessReturn = {
-    isSuccessful:true,
-    data: Response,
-}
+  isSuccessful: true;
+  data: Response;
+};
+
 type GETRequestFailReturn = {
-    isSuccessful:false,
-    data: RequestError,
-}
+  isSuccessful: false;
+  data: RequestError;
+};

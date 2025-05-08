@@ -1,22 +1,28 @@
 //===================================MAIN SUGGESTIONS============================================
-// discuss error texts
+// Discuss error texts
 //===================================MAIN SUGGESTIONS============================================
 
 //==================================MODULE DESCRIPTION===========================================
 /*
-purpose: custom Errors for requests module
+  purpose: Custom Errors for requests module
 
-coused modules:-
+  coused modules: -
 
-main function:-
+  main function: -
 
-helping functions:-
+  helping functions: -
 */
-export { BadStatusError, ClientStatusError, ServerStatusError, BadNetwork, unknownError, RequestError }
+export {
+  BadStatusError,
+  ClientStatusError,
+  ServerStatusError,
+  BadNetwork,
+  unknownError,
+  RequestError
+};
 //==================================MODULE DESCRIPTION===========================================
 
 //====================================MODULE CLASSES=============================================
-
 abstract class RequestError extends Error {
   abstract clientMessage: string[];
 
@@ -83,11 +89,10 @@ class ClientStatusError extends BadStatusError {
 
   constructor(errorCode: number) {
     super(`Reason: server response with code ${errorCode}`, errorCode);
-    this.clientMessage = [
-      "Ошибка клиента"
-    ];
+    this.clientMessage = ["Ошибка клиента"];
   }
 }
+
 /*
 class name: ServerStatusError
 
@@ -114,12 +119,10 @@ structure of created elements: -
 */
 class ServerStatusError extends BadStatusError {
   clientMessage: string[];
-  
+
   constructor(errorCode: number) {
     super(`Reason: server response with code ${errorCode}`, errorCode);
-    this.clientMessage = [
-      "Ошибка на сервере!",
-    ];
+    this.clientMessage = ["Ошибка на сервере!"];
   }
 }
 
@@ -145,15 +148,13 @@ output: object with fields
 
 structure of created elements:-
 */
-class BadNetwork extends RequestError{
-  clientMessage:string[];
-  
-  constructor(message:string){
+class BadNetwork extends RequestError {
+  clientMessage: string[];
+
+  constructor(message: string) {
     super(`Reason: Network problems during fetch ${message}`);
-    this.name = "BadNetwork"
-    this.clientMessage = [
-      "Ошибка вызванная fetch"
-    ];
+    this.name = "BadNetwork";
+    this.clientMessage = ["Ошибка вызванная fetch"];
   }
 }
 
@@ -178,15 +179,13 @@ output: object with fields
 
 structure of created elements:-
 */
-class unknownError extends RequestError{
-  clientMessage:string[];
-  
-  constructor(message:string){
+class unknownError extends RequestError {
+  clientMessage: string[];
+
+  constructor(message: string) {
     super(`unknown error: ${message}`);
-    this.name = "unknownError"
-    this.clientMessage = [
-      "Неизвестная ошибка"
-    ];
+    this.name = "unknownError";
+    this.clientMessage = ["Неизвестная ошибка"];
   }
 }
 //====================================MODULE CLASSES=============================================
