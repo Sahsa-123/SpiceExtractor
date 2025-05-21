@@ -1,0 +1,33 @@
+.crowler {
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  overflow: hidden;
+  font-family: sans-serif;
+}
+
+.tabs {
+  display: flex;
+  background-color: #f0f0f0;
+}
+
+.tab {
+  padding: 0.5rem 1rem;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.tab:hover {
+  background-color: #e0e0e0;
+}
+
+.active {
+  background-color: white;
+  border-bottom: 2px solid #007bff;
+}
+
+.content {
+  padding: 1rem;
+  background-color: white;
+}
