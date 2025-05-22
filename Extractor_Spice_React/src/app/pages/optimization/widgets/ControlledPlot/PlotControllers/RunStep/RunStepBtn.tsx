@@ -2,7 +2,7 @@ import React from 'react';
 import { useSetAtom } from 'jotai';
 import { graphAtom } from "../../sharedState";
 import { RunStepButtonProps } from './api';
-import { Button } from '../../../../../../core/UI';
+import { Button } from '../../../../../../../core/UI';
 
 export const RunStepButton: React.FC<RunStepButtonProps> = ({ endpoint, stepId }) => {
   const setGraph = useSetAtom(graphAtom);

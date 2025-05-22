@@ -1,3 +1,7 @@
+.header{
+  padding: 0 25px;
+}
+
 .header__menu{
   --header-menu-gap-x: 10px;
   

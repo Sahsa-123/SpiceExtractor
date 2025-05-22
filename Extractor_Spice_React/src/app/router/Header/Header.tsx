@@ -1,5 +1,4 @@
 import { btnProps, Button } from "../../../core/UI"
-import { PageCenteredContainer } from "../../../core/Wrappers"
 import styles from "./Header.module.css"
 import { useNavigate } from "react-router"
 
@@ -18,13 +17,11 @@ export const Header = ()=>{
     }
   }
     return (
-    <header>
-      <PageCenteredContainer>
+    <header className={styles["header"]}>
         <ul className={`${styles["header__menu"]}`} id="header-modal-menu">
           <li><Button {...mainPageBtnConfig}>Статистическая обработка</Button></li>
           <li><Button {...optPageBtnConfig}>Оптимизация</Button></li>
         </ul>
-      </PageCenteredContainer>
     </header>
     )
 }

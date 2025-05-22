@@ -1,0 +1,6 @@
+.optimization__steps {
+  height: 100%;
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 4px; /* чтобы скролл не накладывался на контент */
+}

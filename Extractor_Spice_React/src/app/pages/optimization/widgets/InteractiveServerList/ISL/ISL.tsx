@@ -4,7 +4,7 @@ import { ISLProps } from './api';
 import { ISLStateAtom } from '../sharedState/ISLState';
 import { useAtom } from 'jotai';
 import styles from './ISL.module.css';
-import { InputField } from '../../../../../core/UI';
+import { InputField } from '../../../../../../core/UI';
 
 type Step = {
   name: string;
@@ -12,7 +12,7 @@ type Step = {
   id: string;
 };
 
-export const ISL: React.FC<ISLProps> = ({ config, syncFunc }) => {
+export const ISL: React.FC<ISLProps> = ({ config, syncFunc, outerStyles=null }) => {
   //Настройка сосояний
   const { endpoints } = config;
   const [currentState, setState] = useAtom(ISLStateAtom);
@@ -128,34 +128,43 @@ export const ISL: React.FC<ISLProps> = ({ config, syncFunc }) => {
 
   //Реакция на изменение состояния
   ///Настройка поля ввода
-  const inputFieldConfig = selected ? {
-    placeholder: "Введите название нового шага",
-    enterHandler: (val: string) => {
-      if (!val.trim()) return;
-      addMutation.mutate(
-        { name: val.trim(), index: selected.index + 1 },
-        { onSuccess: () => setState('stable') }
-      );
-    },
-    outerStyles: styles["ISL__input"],} 
-    :
-    undefined;
+ const handleAdd = (val: string) => {
+    if (!val.trim() || !selected) {
+      setState('stable'); // просто свернём поле
+      return;
+    }
+
+    addMutation.mutate(
+      { name: val.trim(), index: selected.index + 1 },
+      { onSuccess: () => setState('stable') }
+    );
+  };
+
+
+  const inputFieldConfig = selected
+  ? {
+      placeholder: "Введите название нового шага",
+      enterHandler: handleAdd,
+      blurHandler: handleAdd,
+      outerStyles: styles["ISL__input"],
+    }
+  : undefined;
   ///Настройка поля ввода
 
 
   return (
-  <ul className={styles.ISL}>
+  <ul className={`${styles.ISL} ${outerStyles}`}>
     {steps.map((step) => (
       <React.Fragment key={step.id}>
         <li
-          className={`${styles.ISLelem} ${selected?.id === step.id ? styles['ISLelem--selected'] : ''}`}
+          className={`${styles["ISL__elem"]} ${selected?.id === step.id ? styles['ISL__elem--selected'] : ''}`}
           onClick={() => handleSelect(step)}
         >
           {step.name}
         </li>
 
         {currentState === 'editing' && selected?.id === step.id && inputFieldConfig && (
-          <li className={`${styles.ISLelem} ${styles["ISLelem--no-padding"]}`}>
+          <li className={`${styles["ISL__elem"]} ${styles["ISL__elem--no-padding"]}`}>
             <InputField {...inputFieldConfig} />
           </li>
         )}

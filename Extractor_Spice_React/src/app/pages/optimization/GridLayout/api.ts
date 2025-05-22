@@ -1,5 +1,5 @@
-import { ReactElement } from 'react';
-
 export interface GridLayoutProps {
-  children: [ReactElement, ReactElement, ReactElement, ReactElement];
+  children: [React.ReactElement, React.ReactElement, React.ReactElement, React.ReactElement];
+  columnWidths?: [number?, number?, number?]; // ширины 3 колонок
+  rowHeights?: [number?, number?];            // высоты 2 строк
 }

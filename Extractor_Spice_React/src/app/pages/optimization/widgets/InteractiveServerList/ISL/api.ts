@@ -8,5 +8,6 @@ export interface ISLProps{
         };
     }
     syncFunc: (data: string|null) => void;
+    outerStyles?: string|null 
 }
 
