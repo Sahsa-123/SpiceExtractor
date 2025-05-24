@@ -1,4 +1,4 @@
-export interface StepsCharactFormProps {
+export interface StopFormProps {
   stepId: string;
   config: {
     host: string;

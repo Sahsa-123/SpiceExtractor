@@ -12,14 +12,14 @@ type Step = {
   id: string;
 };
 
-export const ISL: React.FC<ISLProps> = ({ config, syncFunc, outerStyles=null }) => {
-  //Настройка сосояний
+export const ISL: React.FC<ISLProps> = ({ config, syncFunc, outerStyles = null }) => {
   const { endpoints } = config;
   const [currentState, setState] = useAtom(ISLStateAtom);
   const [selected, setSelected] = useState<Step | null>(null);
-  //Настройка сосояний
 
-  //Получение данных с сервера
+  const queryClient = useQueryClient();
+
+  // 1. Получаем список шагов
   const { data: steps = [] } = useQuery<Step[]>({
     queryKey: ['steps'],
     queryFn: async () => {
@@ -28,13 +28,11 @@ export const ISL: React.FC<ISLProps> = ({ config, syncFunc, outerStyles=null }) 
     },
     staleTime: Infinity,
   });
-  //Получение данных с сервера
 
-  // Настройка общения с сервером(обновления состояний)
-  const queryClient = useQueryClient();
+  // 2. Удаление шага
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      const url = new URL(endpoints.deleteEP, window.location.origin);
+      const url = new URL(endpoints.deleteEP);
       url.searchParams.set('id', id);
       await fetch(url.toString(), { method: 'DELETE' });
     },
@@ -43,12 +41,13 @@ export const ISL: React.FC<ISLProps> = ({ config, syncFunc, outerStyles=null }) 
     },
   });
 
+  // 3. Изменение порядка
   const changeOrderMutation = useMutation({
-    mutationFn: async (steps: Step[]) => {
+    mutationFn: async (updatedSteps: Step[]) => {
       await fetch(endpoints.changeOrderEP, {
-        method: 'PATCH',
+        method: 'PATCH', // ✅ PATCH, как теперь принято
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(steps),
+        body: JSON.stringify(updatedSteps),
       });
     },
     onSuccess: () => {
@@ -56,6 +55,7 @@ export const ISL: React.FC<ISLProps> = ({ config, syncFunc, outerStyles=null }) 
     },
   });
 
+  // 4. Добавление шага
   const addMutation = useMutation({
     mutationFn: async (newStep: { name: string; index: number }) => {
       await fetch(endpoints.addEP, {
@@ -68,43 +68,32 @@ export const ISL: React.FC<ISLProps> = ({ config, syncFunc, outerStyles=null }) 
       queryClient.invalidateQueries({ queryKey: ['steps'] });
     },
   });
-  // Настройка общения с сервером(обновления состояний)
 
-  //Поведение при выборе элемента
   const handleSelect = (step: Step) => {
     setSelected(step);
   };
-  //Поведение при выборе элемента
 
-  //Реакция на изменение состояния
   useEffect(() => {
-    if (!selected){
+    if (!selected) {
       setState('stable');
-    }
-
-    else if (currentState === 'deleting') {
+    } else if (currentState === 'deleting') {
       deleteMutation.mutate(selected.id);
       setSelected(null);
       setState('stable');
-    }
-
-    else if (currentState === 'moovingUp') {
+    } else if (currentState === 'moovingUp') {
       const idx = steps.findIndex(s => s.id === selected.id);
       if (idx > 0) {
         const reordered = [...steps];
         [reordered[idx - 1], reordered[idx]] = [reordered[idx], reordered[idx - 1]];
 
         const updated = [
-        { ...reordered[idx], index: idx },
-        { ...reordered[idx - 1], index: idx - 1 },
+          { ...reordered[idx - 1], index: idx - 1 },
+          { ...reordered[idx], index: idx },
         ];
-
         changeOrderMutation.mutate(updated);
       }
       setState('stable');
-    }
-
-    else if (currentState === 'moovingDown') {
+    } else if (currentState === 'moovingDown') {
       const idx = steps.findIndex(s => s.id === selected.id);
       if (idx < steps.length - 1 && idx >= 0) {
         const reordered = [...steps];
@@ -114,23 +103,20 @@ export const ISL: React.FC<ISLProps> = ({ config, syncFunc, outerStyles=null }) 
           { ...reordered[idx], index: idx },
           { ...reordered[idx + 1], index: idx + 1 },
         ];
-
         changeOrderMutation.mutate(updated);
       }
       setState('stable');
     }
-
   }, [currentState]);
 
   useEffect(() => {
-    syncFunc(selected?.id ?? null); 
+    syncFunc(selected?.id ?? null);
   }, [selected]);
 
-  //Реакция на изменение состояния
-  ///Настройка поля ввода
- const handleAdd = (val: string) => {
+  // Добавление через поле
+  const handleAdd = (val: string) => {
     if (!val.trim() || !selected) {
-      setState('stable'); // просто свернём поле
+      setState('stable');
       return;
     }
 
@@ -140,39 +126,35 @@ export const ISL: React.FC<ISLProps> = ({ config, syncFunc, outerStyles=null }) 
     );
   };
 
-
   const inputFieldConfig = selected
-  ? {
-      placeholder: "Введите название нового шага",
-      enterHandler: handleAdd,
-      blurHandler: handleAdd,
-      outerStyles: styles["ISL__input"],
-    }
-  : undefined;
-  ///Настройка поля ввода
-
+    ? {
+        placeholder: 'Введите название нового шага',
+        enterHandler: handleAdd,
+        blurHandler: handleAdd,
+        outerStyles: styles["ISL__input"],
+      }
+    : undefined;
 
   return (
-  <ul className={`${styles.ISL} ${outerStyles}`}>
-    {steps.map((step) => (
-      <React.Fragment key={step.id}>
-        <li
-          className={`${styles["ISL__elem"]} ${selected?.id === step.id ? styles['ISL__elem--selected'] : ''}`}
-          onClick={() => handleSelect(step)}
-        >
-          {step.name}
-        </li>
-
-        {currentState === 'editing' && selected?.id === step.id && inputFieldConfig && (
-          <li className={`${styles["ISL__elem"]} ${styles["ISL__elem--no-padding"]}`}>
-            <InputField {...inputFieldConfig} />
+    <ul className={`${styles.ISL} ${outerStyles}`}>
+      {steps.map((step) => (
+        <React.Fragment key={step.id}>
+          <li
+            className={`${styles["ISL__elem"]} ${
+              selected?.id === step.id ? styles['ISL__elem--selected'] : ''
+            }`}
+            onClick={() => handleSelect(step)}
+          >
+            {step.name}
           </li>
-        )}
 
-
-      </React.Fragment>
-    ))}
-  </ul>
-);
-
+          {currentState === 'editing' && selected?.id === step.id && inputFieldConfig && (
+            <li className={`${styles["ISL__elem"]} ${styles["ISL__elem--no-padding"]}`}>
+              <InputField {...inputFieldConfig} />
+            </li>
+          )}
+        </React.Fragment>
+      ))}
+    </ul>
+  );
 };

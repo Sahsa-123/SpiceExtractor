@@ -1,2 +1,2 @@
 export { StepsCharactForm } from "./stepsCharactForm";
-export type { stepsCharactFormProps } from './api';
+export type { StepsCharactFormProps } from "./api";

@@ -1,78 +1,102 @@
-import React from 'react';
-import { useForm } from 'react-hook-form';
+import React, { useEffect } from 'react';
+import { useForm, Path } from 'react-hook-form';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { stepsCharactFormProps, stepsCharactFormValues } from './api';
+
+/* local dependencies */
+import { StepsCharactFormProps } from './api';
+import { StepsCharactSchemaType } from './charactSchema';
+import { fetchStepsCharact } from './webAPI';
 import styles from './stepsCharactForm.module.css';
+/* local dependencies */
 
-const stopKeys = ['xmin', 'xmax', 'ymin', 'ymax'] as const;
+export const StepsCharactForm: React.FC<StepsCharactFormProps> = ({
+  stepId,
+  config,
+  outerStyles = null,
+}) => {
+  const { host, endpoints } = config;
+  const queryClient = useQueryClient();
 
-export const StepsCharactForm: React.FC<stepsCharactFormProps> = ({ stepId }) => {
-    // 1. Получаем данные с сервера
-    const queryClient = useQueryClient();
-    const { data, isFetching } = useQuery<stepsCharactFormValues>({
-        queryKey: ['stepsStopCond', stepId],
-        queryFn: async () => {
-        const res = await fetch(`http://localhost:4000/steps/stopcond?id=${stepId}`);
-        if (!res.ok) throw new Error("Ошибка загрузки stopcond");
-        return res.json();
-        }
-    });
+  const {
+    data,
+    isFetching,
+    isError,
+  } = useQuery<StepsCharactSchemaType>({
+    queryKey: ['stepsCharact', stepId],
+    queryFn: () => fetchStepsCharact(stepId, host, endpoints.get),
+  });
 
-    // 2. Инициализируем useForm
-    const { register, handleSubmit, reset } = useForm<stepsCharactFormValues>();
+  const {
+    register,
+    handleSubmit,
+    reset,
+  } = useForm<StepsCharactSchemaType>();
 
-    // 3. Подставляем данные (даже если undefined)
-    React.useEffect(() => {
-        console.log(data)
-        reset(data);
-    }, [data]);
+  useEffect(() => {
+    if (data) reset(data);
+  }, [data]);
 
+  const mutation = useMutation({
+    mutationFn: async (formData: StepsCharactSchemaType) => {
+      await fetch(`${host}/${endpoints.post}?id=${stepId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['stepsCharact', stepId] });
+    },
+  });
 
-    // 4. Отправка формы
-    const mutation = useMutation({
-        mutationFn: async (formData: stepsCharactFormValues) => {
-        await fetch('http://localhost:4000/steps/stopcond', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id: stepId, stopcond: formData }),
-        });
-        },
-        onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ['stepsStopCond', stepId] });
-        }
-    });
+  const onSubmit = (values: StepsCharactSchemaType) => {
+    mutation.mutate(values);
+  };
 
-    const onSubmit = (values: stepsCharactFormValues) => {
-        mutation.mutate(values);
-    };
+  // 📌 UI состояния
+  if (isFetching) return <div>Загрузка...</div>;
+  if (isError || !data) return <div>Ошибка загрузки данных</div>;
 
-    if (isFetching) return <div>Загрузка...</div>;
+  return (
+    <form
+      onSubmit={handleSubmit(onSubmit)}
+      className={`${styles.wrapper} ${outerStyles || ''}`}
+    >
+      <div className={styles.fieldsContainer}>
+        {Object.keys(data).map((name) => {
+          const block = data![name as keyof StepsCharactSchemaType];
 
-    return (
-    <form onSubmit={handleSubmit(onSubmit)} className={styles.wrapper}>
-        <div className={styles.row}>
-        <div className={styles.column}>
-            <strong>IDVD</strong>
-            {stopKeys.map((key) => (
-            <div key={`IDVD-${key}`} className={styles.inputGroup}>
-                <label>{key}</label>
-                <input type="number" step="any" {...register(`IDVD.${key}`)} />
-            </div>
-            ))}
-        </div>
+          return (
+            <fieldset key={name}>
+              <legend>{name}</legend>
 
-        <div className={styles.column}>
-            <strong>IDVG</strong>
-            {stopKeys.map((key) => (
-            <div key={`IDVG-${key}`} className={styles.inputGroup}>
-                <label>{key}</label>
-                <input type="number" step="any" {...register(`IDVG.${key}`)} />
-            </div>
-            ))}
-        </div>
-        </div>
+              <label className={styles.checkboxLabel}>
+                <input
+                  type="checkbox"
+                  {...register(`${name}.checked` as Path<StepsCharactSchemaType>)}
+                />
+                Активно
+              </label>
 
-        <button type="submit">Отправить</button>
+              {Object.entries(block)
+                .filter(([key]) => key !== 'checked')
+                .map(([key]) => {
+                  const path = `${name}.${key}` as Path<StepsCharactSchemaType>;
+                  return (
+                    <div key={key} className={styles.inputGroup}>
+                      <label>{key}</label>
+                      <input type="number" step="any" {...register(path, { valueAsNumber: true })} />
+                    </div>
+                  );
+                })}
+            </fieldset>
+          );
+        })}
+      </div>
+
+      <button type="submit" className={styles.saveButton}>
+        Сохранить
+      </button>
     </form>
-    );
+  );
 };

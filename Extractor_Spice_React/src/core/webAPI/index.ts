@@ -10,4 +10,12 @@ export { BadJSON } from "./JSONConverters";
 export { GETRequest } from "./Requests";
 export type { GETRequestReturnTypes } from "./Requests";
 export { RequestError } from "./Requests";
+
+/* ZodValidator Module */
+export { validateWithZodSchema } from "./validateWithZodSchema";
+export type {
+  ValidateWithZodSchemaInput,
+  ZodValidationResult,
+} from "./validateWithZodSchema";
+export { SchemaDismatchError } from "./validateWithZodSchema";
 //===================================WEB API PACKAGE EXPORTS=====================================
