@@ -6,14 +6,18 @@ import { StopFormProps } from './api';
 import { StopFormValues } from './stopSchema';
 import { fetchStopFormData } from './webAPI';
 import styles from './stopForm.module.css';
+import { CenteredContainer } from '../../../../../../core/Wrappers';
 
 export const StopForm: React.FC<StopFormProps> = ({
   stepId,
   config,
   outerStyles = null,
+  height,
+  width
 }) => {
   const { host, endpoints } = config;
   const queryClient = useQueryClient();
+  const externalStyles={height, width}
 
   const {
     data,
@@ -51,31 +55,34 @@ export const StopForm: React.FC<StopFormProps> = ({
     mutation.mutate(values);
   };
 
-  if (isFetching) return <div>Загрузка...</div>;
-  if (isError || !data) return <div>Ошибка загрузки данных</div>;
+  if (isFetching) return <CenteredContainer {...externalStyles}>Загрузка...</CenteredContainer>;
+  if (isError || !data) return <CenteredContainer {...externalStyles}>Ошибка загрузки данных</CenteredContainer>;
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className={`${styles.wrapper} ${outerStyles || ''}`}>
-      <div className={styles.inputGroup}>
-        <label>iterNum</label>
-        <input type="number" {...register("iterNum", { valueAsNumber: true })} />
-      </div>
+    <form style={externalStyles} onSubmit={handleSubmit(onSubmit)} className={`${styles["form"]} ${outerStyles || ''}`}>
+      <div  className={styles["form__inputPart"]}>
+        <div className={styles["form__fieldset"]}>
+          <div className={styles["form__input-group"]}>
+            <label>iterNum</label>
+            <input type="number" {...register("iterNum", { valueAsNumber: true })} />
+          </div>
 
-      <div className={styles.inputGroup}>
-        <label>relMesErr (%)</label>
-        <input type="number" min={0} max={100} step="any" {...register("relMesErr", { valueAsNumber: true })} />
-      </div>
+          <div className={styles["form__input-group"]}>
+            <label>relMesErr (%)</label>
+            <input type="number" min={0} max={100} step="any" {...register("relMesErr", { valueAsNumber: true })} />
+          </div>
 
-      <div className={styles.inputGroup}>
-        <label>absMesErr</label>
-        <input type="number" step="any" {...register("absMesErr", { valueAsNumber: true })} />
-      </div>
+          <div className={styles["form__input-group"]}>
+            <label>absMesErr</label>
+            <input type="number" step="any" {...register("absMesErr", { valueAsNumber: true })} />
+          </div>
 
-      <div className={styles.inputGroup}>
-        <label>paramDelt (%)</label>
-        <input type="number" min={0} max={100} step="any" {...register("paramDelt", { valueAsNumber: true })} />
+          <div className={styles["form__input-group"]}>
+            <label>paramDelt (%)</label>
+            <input type="number" min={0} max={100} step="any" {...register("paramDelt", { valueAsNumber: true })} />
+          </div>
       </div>
-
+      </div>
       <button type="submit" className={styles.saveButton}>Сохранить</button>
     </form>
   );

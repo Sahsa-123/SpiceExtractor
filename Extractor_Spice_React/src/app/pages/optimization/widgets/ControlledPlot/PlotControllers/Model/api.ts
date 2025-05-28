@@ -1,3 +1,6 @@
 export interface ModelButtonProps {
-  endpoint: string;
+  config: {
+    host: string;
+    endpoint: string;
+  };
 }

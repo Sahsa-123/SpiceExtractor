@@ -1,36 +1,48 @@
-.wrapper {
+.form {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-  align-items: stretch;
+  gap: 1em;
+  align-items: center;
+  justify-content: space-between;
 }
 
 /* Контейнер для всех fieldset — горизонтальный ряд */
-.fieldsContainer {
+.form__inputPart {
   display: flex;
   flex-direction: row;
-  gap: 1.5rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 1em;
+  width: 100%;
+
+  overflow: auto;
 }
 
-/* Стиль одного блока IDVD / IDVG */
-fieldset {
+.form__fieldset {
+  display: flex;
+  flex-direction: column;
+  padding: 1em;
+  flex: 1;
+  gap: 1em;
+  overflow: auto;
+  max-width: 350px;
+  height: 100%;
+  
   border: 1px solid #ccc;
   border-radius: 6px;
-  padding: 1rem;
-  flex: 1;
 }
 
-legend {
+.form__legend {
   font-weight: bold;
-  padding: 0 0.5rem;
+  padding: 0 0.5em;
   font-size: 1rem;
 }
 
-.inputGroup {
+.form__input-group{
   display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  margin-bottom: 0.75rem;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.5em
 }
 
 label {
@@ -47,16 +59,9 @@ input[type="checkbox"] {
   transform: scale(1.1);
 }
 
-.checkboxLabel {
-  display: flex;
-  align-items: center;
-  margin-bottom: 1rem;
-}
-
 /* Кнопка сохранить — внизу слева */
-.saveButton {
+.form__submit-btn {
   align-self: flex-start;
-  margin-top: auto;
   padding: 0.5rem 1rem;
   background-color: #3390ff;
   border: none;
@@ -65,8 +70,9 @@ input[type="checkbox"] {
   font-weight: bold;
   cursor: pointer;
   transition: background-color 0.2s ease-in-out;
+  align-self: center;
 }
 
-.saveButton:hover {
+.form__submit-btn:hover {
   background-color: #2677d4;
 }

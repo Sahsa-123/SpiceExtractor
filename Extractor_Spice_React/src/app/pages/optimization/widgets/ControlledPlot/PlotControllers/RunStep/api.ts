@@ -1,4 +1,7 @@
 export interface RunStepButtonProps {
-  endpoint: string;
   stepId: string;
+  config: {
+    host: string;
+    endpoint: string;
+  };
 }

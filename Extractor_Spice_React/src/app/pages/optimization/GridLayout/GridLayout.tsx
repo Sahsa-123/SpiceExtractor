@@ -4,19 +4,24 @@ import { GridLayoutProps } from './api';
 import { buildRowTemplate, buildColTemplate } from './utils';
 
 
-export const GridLayout: React.FC<GridLayoutProps> = ({ children, columnWidths, rowHeights }) => {
+export const GridLayout: React.FC<GridLayoutProps> = ({ children, columnWidths, rowHeights, height,outerStyles="",gridItemsAdditionalStyles, width }) => {
   const colTemplate = buildColTemplate(columnWidths);
   const rowTemplate = buildRowTemplate(rowHeights);
 
-  return (
-    <div
-      className={styles.grid}
-      style={{
+  const additionalStyles={
         gridTemplateColumns: colTemplate,
         gridTemplateRows: rowTemplate,
-      }}>
+        height,
+        width
+      }
+
+  return (
+    <div
+      className={`${styles.grid} ${outerStyles}`}
+      style={additionalStyles}
+    >
       {children.map((child, index) => (
-        <div key={index} className={`${styles.grid__item} ${styles[`grid__item--${index + 1}`]}`}>
+        <div key={index} className={`${styles.grid__item} ${styles[`grid__item--${index + 1}`]} ${gridItemsAdditionalStyles?gridItemsAdditionalStyles[index]||"":""}`}>
           {child}
         </div>
       ))}

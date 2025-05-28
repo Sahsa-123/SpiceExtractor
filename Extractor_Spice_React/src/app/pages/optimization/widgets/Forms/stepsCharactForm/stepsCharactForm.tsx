@@ -7,15 +7,19 @@ import { StepsCharactFormProps } from './api';
 import { StepsCharactSchemaType } from './charactSchema';
 import { fetchStepsCharact } from './webAPI';
 import styles from './stepsCharactForm.module.css';
+import { CenteredContainer } from '../../../../../../core/Wrappers';
 /* local dependencies */
 
 export const StepsCharactForm: React.FC<StepsCharactFormProps> = ({
   stepId,
   config,
   outerStyles = null,
+  height,
+  width
 }) => {
   const { host, endpoints } = config;
   const queryClient = useQueryClient();
+  const externalStyles={height, width}
 
   const {
     data,
@@ -54,23 +58,24 @@ export const StepsCharactForm: React.FC<StepsCharactFormProps> = ({
   };
 
   // 📌 UI состояния
-  if (isFetching) return <div>Загрузка...</div>;
-  if (isError || !data) return <div>Ошибка загрузки данных</div>;
+  if (isFetching) return <CenteredContainer {...externalStyles}>Загрузка...</CenteredContainer>;
+  if (isError || !data) return <CenteredContainer {...externalStyles}>Ошибка загрузки данных</CenteredContainer>;
 
   return (
     <form
+      style={externalStyles}
       onSubmit={handleSubmit(onSubmit)}
-      className={`${styles.wrapper} ${outerStyles || ''}`}
+      className={`${styles["form"]} ${outerStyles || ''}`}
     >
-      <div className={styles.fieldsContainer}>
+      <div className={styles["form__inputPart"]}>
         {Object.keys(data).map((name) => {
           const block = data![name as keyof StepsCharactSchemaType];
 
           return (
-            <fieldset key={name}>
-              <legend>{name}</legend>
+            <fieldset key={name} className={styles["form__fieldset"]}>
+              <legend className={styles["form__legend"]}>{name}</legend>
 
-              <label className={styles.checkboxLabel}>
+              <label>
                 <input
                   type="checkbox"
                   {...register(`${name}.checked` as Path<StepsCharactSchemaType>)}
@@ -83,7 +88,7 @@ export const StepsCharactForm: React.FC<StepsCharactFormProps> = ({
                 .map(([key]) => {
                   const path = `${name}.${key}` as Path<StepsCharactSchemaType>;
                   return (
-                    <div key={key} className={styles.inputGroup}>
+                    <div key={key} className={styles["form__input-group"]}>
                       <label>{key}</label>
                       <input type="number" step="any" {...register(path, { valueAsNumber: true })} />
                     </div>
@@ -94,7 +99,7 @@ export const StepsCharactForm: React.FC<StepsCharactFormProps> = ({
         })}
       </div>
 
-      <button type="submit" className={styles.saveButton}>
+      <button type="submit" className={styles["form__submit-btn"]}>
         Сохранить
       </button>
     </form>

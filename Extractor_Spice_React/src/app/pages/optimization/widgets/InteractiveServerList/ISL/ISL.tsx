@@ -12,7 +12,8 @@ type Step = {
   id: string;
 };
 
-export const ISL: React.FC<ISLProps> = ({ config, syncFunc, outerStyles = null }) => {
+export const ISL: React.FC<ISLProps> = ({ config, syncFunc, outerStyles = null, height, width }) => {
+  const externalStyles = {height, width}
   const { endpoints } = config;
   const [currentState, setState] = useAtom(ISLStateAtom);
   const [selected, setSelected] = useState<Step | null>(null);
@@ -136,10 +137,11 @@ export const ISL: React.FC<ISLProps> = ({ config, syncFunc, outerStyles = null }
     : undefined;
 
   return (
-    <ul className={`${styles.ISL} ${outerStyles}`}>
+    <ul style={ externalStyles} className={`${styles.ISL} ${outerStyles}`}>
       {steps.map((step) => (
         <React.Fragment key={step.id}>
           <li
+            title={step.name}
             className={`${styles["ISL__elem"]} ${
               selected?.id === step.id ? styles['ISL__elem--selected'] : ''
             }`}

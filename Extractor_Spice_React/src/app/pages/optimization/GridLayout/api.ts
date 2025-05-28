@@ -1,5 +1,10 @@
 export interface GridLayoutProps {
   children: [React.ReactElement, React.ReactElement, React.ReactElement, React.ReactElement];
-  columnWidths?: [number?, number?, number?]; // ширины 3 колонок
-  rowHeights?: [number?, number?];            // высоты 2 строк
+  height: `${number}px`|`${number}%`|"auto";
+  width: `${number}px`|`${number}%`|"auto";
+  
+  columnWidths?: [(number|"auto")?, (number|"auto")?, (number|"auto")?]; // ширины 3 колонок
+  rowHeights?: [(number|"auto")?, (number|"auto")?]; // высоты 2 строк
+  gridItemsAdditionalStyles?:(string|null)[]
+  outerStyles?:string
 }

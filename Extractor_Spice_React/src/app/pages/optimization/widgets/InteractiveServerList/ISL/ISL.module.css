@@ -3,17 +3,21 @@
   list-style: none;
   padding: 0;
   margin: 0;
+  padding: 5px;
+  overflow: auto;
 }
 
 /* ЭЛЕМЕНТ: один шаг */
 .ISL__elem {
   padding: 0.5rem 1rem;
   border-radius: 6px;
-  margin-bottom: 0.5rem;
   cursor: pointer;
 
   outline: 1px solid #ccc;
-
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
   /* ✨ Мягкие переходы */
   transition:
     outline-width 0.15s ease,
@@ -24,6 +28,10 @@
 /* МОДИФИКАТОР: hover — только утолщённый outline */
 .ISL__elem:hover {
   outline-width: 3px;
+}
+
+.ISL__elem:not(:last-child){
+  margin-bottom: 0.7em
 }
 
 /* МОДИФИКАТОР: выбранный элемент */
