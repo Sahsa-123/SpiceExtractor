@@ -29,10 +29,6 @@
     border-bottom-right-radius: 0;
 }
 
-.red{
-    background-color: red;
-}
-
 .crossBtn{
     background-color: white;
 
@@ -43,4 +39,21 @@
     background-image: url("./bgIm/crossBGIm.svg");
     background-position: center;
     background-repeat: no-repeat;
+}
+
+.btn--white_n_blue {
+  align-self: flex-start;
+  padding: 0.5rem 1rem;
+  background-color: #3390ff;
+  border: none;
+  border-radius: 4px;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+  align-self: center;
+}
+
+.btn--white_n_blue:hover {
+  background-color: #2677d4;
 }

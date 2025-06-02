@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-const CharactBlockSchema = z.object({
+export const CharactBlockSchema = z.object({
   checked: z.boolean(),
   xmin: z.number(),
   xmax: z.number(),

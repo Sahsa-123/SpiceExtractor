@@ -2,23 +2,12 @@
   padding: 0 25px;
 }
 
-.optimization__steps{
-  min-width: 150px;
-  width: 100%;
-  margin:0 auto ;
-}
-
 .optimization__btnsList{
   display: flex;
   flex-direction: column;
   height: 100%;
   overflow: auto;
   gap: 1em;
-}
-
-.optimization__local-params{
-  max-width: 800px;
-  margin: 0 auto;
 }
 
 .optimization__grid-item{
