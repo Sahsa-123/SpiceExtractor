@@ -242,81 +242,86 @@ export const OptimizationPage: React.FC = () => {
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   // === CONFIGS ===
-  const stepsListConfig = {
-    config: {
-      endpoints: {
-        getList: "http://localhost:4000/steps",
-        addEP: "http://localhost:4000/steps/add",
-        deleteEP: "http://localhost:4000/steps/delete",
-        changeOrderEP: "http://localhost:4000/steps/changeIndex",
-      },
-    },
-    syncFunc: setSelectedId,
-  };
+  const BASE_URL = "http://127.0.0.1:8010";
 
-  const runStepConfig = {
-    config: {
-      host: "http://localhost:4000",
-      endpoint: "steps/runStep",
+// === CONFIGS ===
+const stepsListConfig = {
+  config: {
+    endpoints: {
+      getList: `${BASE_URL}/steps`,
+      addEP: `${BASE_URL}/steps/add`,
+      deleteEP: `${BASE_URL}/steps/delete`,
+      changeOrderEP: `${BASE_URL}/steps/change_index`, // ← FastAPI использует snake_case
     },
-  };
+  },
+  syncFunc: setSelectedId,
+};
 
-  const modelConfig = {
-    config: {
-      host: "http://localhost:4000",
-      endpoint: "steps/model",
-    },
-  };
+const runStepConfig = {
+  config: {
+    host: BASE_URL,
+    endpoint: "run_step", // ← соответствует FastAPI
+  },
+};
 
-  const uploadBtnConfig = {
-    config: {
-      host: "http://localhost:4000",
-      endpoint: "addFiles",
-    },
-  };
+const modelConfig = {
+  config: {
+    host: "http://localhost:8010",
+    endpoint: "steps/model",
+  },
+};
 
-  const stopFormConfig = selectedId
-    ? {
-        formName: "stopForm",
-        stepId: selectedId,
-        schema: StopSchema,
-        context: StopFormContext,
-        config: {
-          host: "http://localhost:4000",
-          endpoints: {
-            get: "steps/stopcond",
-            post: "steps/stopcond",
-          },
+
+const uploadBtnConfig = {
+  config: {
+    host: BASE_URL,
+    endpoint: "add_files", // ← FastAPI
+  },
+};
+
+const stopFormConfig = selectedId
+  ? {
+      formName: "stopForm",
+      stepId: selectedId,
+      schema: StopSchema,
+      context: StopFormContext,
+      config: {
+        host: BASE_URL,
+        endpoints: {
+          get: "steps/stopcond",
+          post: "steps/stopcond",
         },
-      }
-    : null;
-
-  const charactFormConfig = selectedId
-    ? {
-        formName: "charactForm",
-        stepId: selectedId,
-        schema: StepsCharactSchema,
-        context: StepsCharactFormContext,
-        config: {
-          host: "http://localhost:4000",
-          endpoints: {
-            get: "steps/charact",
-            post: "steps/charact",
-          },
-        },
-      }
-    : null;
-
-  const localParamsFormConfig = {
-    config: {
-      host: "http://localhost:4000",
-      endpoints: {
-        get: "steps/param",
-        post: "steps/param",
       },
-      stepId: selectedId || "",
+    }
+  : null;
+
+const charactFormConfig = selectedId
+  ? {
+      formName: "charactForm",
+      stepId: selectedId,
+      schema: StepsCharactSchema,
+      context: StepsCharactFormContext,
+      config: {
+        host: BASE_URL,
+        endpoints: {
+          get: "steps/characteristics", // ← FastAPI endpoint
+          post: "steps/characteristics",
+        },
+      },
+    }
+  : null;
+
+const localParamsFormConfig = {
+  config: {
+    host: BASE_URL,
+    endpoints: {
+      get: "steps/params",  // ← FastAPI endpoint
+      post: "steps/params",
     },
-  };
+    stepId: selectedId || "",
+  },
+};
+
 
   // === RENDER ===
   return (

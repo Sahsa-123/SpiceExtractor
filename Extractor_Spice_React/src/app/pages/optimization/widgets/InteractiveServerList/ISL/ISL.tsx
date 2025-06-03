@@ -46,9 +46,9 @@ export const ISL: React.FC<ISLProps> = ({ config, syncFunc, outerStyles = null, 
   const changeOrderMutation = useMutation({
     mutationFn: async (updatedSteps: Step[]) => {
       await fetch(endpoints.changeOrderEP, {
-        method: 'PATCH', // ✅ PATCH, как теперь принято
+        method: 'POST', // ✅ PATCH, как теперь принято
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updatedSteps),
+        body: JSON.stringify({steps:updatedSteps}),
       });
     },
     onSuccess: () => {
@@ -76,38 +76,49 @@ export const ISL: React.FC<ISLProps> = ({ config, syncFunc, outerStyles = null, 
 
   useEffect(() => {
     if (!selected) {
+      if (currentState==="editing"){
+        return
+      }
       setState('stable');
     } else if (currentState === 'deleting') {
       deleteMutation.mutate(selected.id);
       setSelected(null);
       setState('stable');
     } else if (currentState === 'moovingUp') {
-      const idx = steps.findIndex(s => s.id === selected.id);
-      if (idx > 0) {
-        const reordered = [...steps];
-        [reordered[idx - 1], reordered[idx]] = [reordered[idx], reordered[idx - 1]];
+      const currentStep = steps.find(s => s.id === selected.id);
+      if (!currentStep) return;
 
+      const currentIndex = currentStep.index;
+      const targetStep = steps.find(s => s.index === currentIndex - 1);
+
+      if (targetStep) {
         const updated = [
-          { ...reordered[idx - 1], index: idx - 1 },
-          { ...reordered[idx], index: idx },
+          { ...targetStep, index: currentIndex },
+          { ...currentStep, index: currentIndex - 1 },
         ];
         changeOrderMutation.mutate(updated);
       }
-      setState('stable');
-    } else if (currentState === 'moovingDown') {
-      const idx = steps.findIndex(s => s.id === selected.id);
-      if (idx < steps.length - 1 && idx >= 0) {
-        const reordered = [...steps];
-        [reordered[idx + 1], reordered[idx]] = [reordered[idx], reordered[idx + 1]];
 
-        const updated = [
-          { ...reordered[idx], index: idx },
-          { ...reordered[idx + 1], index: idx + 1 },
-        ];
-        changeOrderMutation.mutate(updated);
-      }
       setState('stable');
-    }
+
+      } else if (currentState === 'moovingDown') {
+        const currentStep = steps.find(s => s.id === selected.id);
+        if (!currentStep) return;
+
+        const currentIndex = currentStep.index;
+        const targetStep = steps.find(s => s.index === currentIndex + 1);
+
+        if (targetStep) {
+          const updated = [
+            { ...currentStep, index: currentIndex + 1 },
+            { ...targetStep, index: currentIndex },
+          ];
+          changeOrderMutation.mutate(updated);
+        }
+
+    setState('stable');
+  }
+
   }, [currentState]);
 
   useEffect(() => {
@@ -116,18 +127,38 @@ export const ISL: React.FC<ISLProps> = ({ config, syncFunc, outerStyles = null, 
 
   // Добавление через поле
   const handleAdd = (val: string) => {
-    if (!val.trim() || !selected) {
-      setState('stable');
-      return;
+    if(steps.length===0){
+      if(!val.trim()){
+        setState("stable")
+        return
+      }
+      else{
+        addMutation.mutate(
+            { name: val.trim(), index: 0 },
+            { onSuccess: () => setState('stable') }
+          );
+      }
+    }else{
+      if(!val.trim()){
+        setState('stable');
+        return;
+      }
+      else if(!selected){
+        addMutation.mutate(
+          { name: val.trim(), index: 0 },
+          { onSuccess: () => setState('stable') }
+        );
+      }
+      else{
+        addMutation.mutate(
+          { name: val.trim(), index: selected.index + 1 },
+          { onSuccess: () => setState('stable') }
+        );  
+      }
     }
-
-    addMutation.mutate(
-      { name: val.trim(), index: selected.index + 1 },
-      { onSuccess: () => setState('stable') }
-    );
   };
 
-  const inputFieldConfig = selected
+  const inputFieldConfig = currentState==="editing"
     ? {
         placeholder: 'Введите название нового шага',
         enterHandler: handleAdd,
@@ -138,7 +169,15 @@ export const ISL: React.FC<ISLProps> = ({ config, syncFunc, outerStyles = null, 
 
   return (
     <ul style={ externalStyles} className={`${styles.ISL} ${outerStyles}`}>
-      {steps.map((step) => (
+      {
+      !selected&&currentState==="editing"?
+        <li className={`${styles["ISL__elem"]} ${styles["ISL__elem--no-padding"]}`}>
+          <InputField {...inputFieldConfig} />
+        </li>
+        :
+        null
+      }
+      {[...steps].sort((a, b) => a.index - b.index).map((step) => (
         <React.Fragment key={step.id}>
           <li
             title={step.name}
@@ -156,7 +195,9 @@ export const ISL: React.FC<ISLProps> = ({ config, syncFunc, outerStyles = null, 
             </li>
           )}
         </React.Fragment>
-      ))}
+      ))
+      }
     </ul>
   );
 };
+
