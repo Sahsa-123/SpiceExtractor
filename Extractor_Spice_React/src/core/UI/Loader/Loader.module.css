@@ -1,4 +1,4 @@
-.graph{
+.loader_parent{
     position: relative;
 }
 
@@ -9,6 +9,7 @@
     right: 0;
     bottom: 0;
     background: rgba(128, 128, 128, 0.5);
+    border-radius: inherit;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -38,4 +39,3 @@
 }
   
 @keyframes l4 {to{clip-path: inset(0 -1ch 0 0)}}
-  

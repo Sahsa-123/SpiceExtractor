@@ -1,15 +1,15 @@
 import React from "react";
 import { useAtom, useSetAtom } from "jotai";
 import { Button } from "../../../../../../../core/UI";
-import { graphAtom, isGraphFetchingAtom } from "../../sharedState";
+import { graphAtom, isGraphFetchingAtom, PlotDataSchema } from "../../sharedState";
 import { ModelButtonProps } from "./api";
 import { fetchPlot } from "../sharedWebAPI";
-import { PlotDataSchema } from "../../sharedState"
 
 export const ModelButton: React.FC<ModelButtonProps> = ({ config }) => {
-  const { host, endpoint } = config;
+  const { host, endpoint, queryParams } = config;
   const setGraph = useSetAtom(graphAtom);
   const [isFetching, setFetching] = useAtom(isGraphFetchingAtom);
+
   const handleClick = async () => {
     setFetching(true);
     try {
@@ -17,6 +17,7 @@ export const ModelButton: React.FC<ModelButtonProps> = ({ config }) => {
         host,
         endpoint,
         schema: PlotDataSchema,
+        queryParams,
       });
       setGraph({ data: result, isError: false });
     } catch (error) {
@@ -27,6 +28,9 @@ export const ModelButton: React.FC<ModelButtonProps> = ({ config }) => {
     }
   };
 
-
-  return <Button clickHandler={handleClick} disabled={isFetching}>Смоделировать</Button>;
+  return (
+    <Button clickHandler={handleClick} disabled={isFetching}>
+      Смоделировать
+    </Button>
+  );
 };

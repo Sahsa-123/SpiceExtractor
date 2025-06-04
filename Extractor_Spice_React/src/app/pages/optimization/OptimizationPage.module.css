@@ -15,3 +15,6 @@
   border-radius:8px;
   padding: 10px;
 }
+.optimization__grid-item:last-child{
+  padding: 0;
+}

@@ -4,15 +4,18 @@ import { z } from "zod";
 export async function fetchPlot<T>({
   host,
   endpoint,
-  stepId,
   schema,
+  queryParams,
 }: {
   host: string;
   endpoint: string;
-  stepId?: string;
   schema: z.ZodSchema<T>;
+  queryParams?: Record<string, string>;
 }): Promise<T> {
-  const query = stepId ? `id=${stepId}` : undefined;
+  const query = queryParams
+    ? new URLSearchParams(queryParams).toString()
+    : undefined;
+
   const response = await GETRequest(host, endpoint, query);
   if (!response.isSuccessful) throw response.data;
 

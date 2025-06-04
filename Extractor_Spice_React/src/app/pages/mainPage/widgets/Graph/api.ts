@@ -4,5 +4,9 @@ import { FieldsetsType } from "../../childIndex"
 
 export interface GraphI{
     plotData: FieldsetsType,
-    outerStyles:string|null
+    outerStyles:string|null,
+    config:{
+        host:string,
+        endpoint:string
+    }
 }

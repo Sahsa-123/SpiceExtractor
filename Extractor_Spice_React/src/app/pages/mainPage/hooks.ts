@@ -8,10 +8,10 @@ import { useQuery } from "@tanstack/react-query";
 import { useMemo} from "react";
 /*other*/
 
-export function useGetData(key:string[]){
+export function useGetData(key:string[], host:string, endpoint:string){
   const { data, status } = useQuery({
     queryKey: [...key],
-    queryFn: () => getChartSettings(),
+    queryFn: () => getChartSettings(host, endpoint),
   });
 
   const parsedFieldsets = useMemo(() => {
@@ -24,44 +24,3 @@ export function useGetData(key:string[]){
     data: parsedFieldsets
   }
 }
-// import { useQuery, QueryFunction, UseQueryResult } from "@tanstack/react-query";
-// import { useMemo } from "react";
-// import { ZodSchema } from "zod";
-
-// type UseGetDataProps<TResponse, TData> = {
-//   queryKey: string[];
-//   queryFn: QueryFunction<TResponse>;
-//   schema: ZodSchema<TData>;
-//   enabled?: boolean;
-// };
-
-// export function useGetData<TResponse, TData>({
-//   queryKey,
-//   queryFn,
-//   schema,
-//   enabled = true,
-// }: UseGetDataProps<TResponse, TData>): {
-//   status: UseQueryResult["status"];
-//   parsedData: TData | null;
-//   data: TResponse | undefined;
-//   error: UseQueryResult["error"];
-// } {
-//   const { data, status, error } = useQuery<TResponse>({
-//     queryKey,
-//     queryFn,
-//     enabled,
-//   });
-
-//   const parsedData = useMemo(() => {
-//     if (!data) return null;
-//     const parsed = schema.safeParse(data);
-//     return parsed.success ? parsed.data : null;
-//   }, [data, schema]);
-
-//   return {
-//     status,
-//     parsedData,
-//     data,
-//     error,
-//   };
-// }

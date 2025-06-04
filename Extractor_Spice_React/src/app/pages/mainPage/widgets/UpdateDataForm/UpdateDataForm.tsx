@@ -12,13 +12,13 @@ import { useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 /*other*/
 
-export const UpdateDataForm: React.FC<UpdateDataFormI> = ({syncFunc}) => {
+export const UpdateDataForm: React.FC<UpdateDataFormI> = ({syncFunc, config}) => {
   const { register, handleSubmit, formState: { isSubmitting },reset } = useForm<{
     chartSettings: FileList;
   }>();
   const { mutateAsync: uploadZip } = useMutation({
     mutationFn: async (formData: FormData) => {
-      const response = await fetch('http://127.0.0.1:8010/upload-zip', {
+      const response = await fetch(`${config.host}/${config.endpoint}`, {
         method: 'POST',
         body: formData,
       });

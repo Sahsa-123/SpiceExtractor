@@ -1,3 +1,4 @@
+// import { FieldsetsType } from "../../childIndex";
 import {GraphI} from "./api"
 
 export function pickChecked(
@@ -14,3 +15,15 @@ export function pickChecked(
       }
     return picked
 }
+
+// export function isPlotDataEmpty(plotData: FieldsetsType): boolean {
+//   if (!plotData) return true;
+
+//   for (const fieldset of Object.values(plotData)) {
+//     if (fieldset.some((item) => item.checked === "true")) {
+//       return false;
+//     }
+//   }
+
+//   return true;
+// }

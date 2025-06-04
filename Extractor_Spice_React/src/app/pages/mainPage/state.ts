@@ -43,6 +43,7 @@ function patchFieldsets(
     oldData:pageState["fieldsets"], 
     selectedData:pageState["fieldsets"]
 ):pageState["fieldsets"]{
+    console.log(selectedData)
     if(!oldData) return oldData
     if(!selectedData) return oldData
 
@@ -60,7 +61,10 @@ function patchFieldsets(
                 }
             }
             else{
-                return cur
+                return {
+                    ...cur,
+                    checked:"false"
+                }
             }
         })
     }

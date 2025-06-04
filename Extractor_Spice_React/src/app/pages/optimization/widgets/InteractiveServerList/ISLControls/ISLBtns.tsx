@@ -15,7 +15,7 @@ export const AddButton: React.FC = () => {
 export const DeleteButton: React.FC = () => {
   const [state, setState] = useAtom(ISLStateAtom);
   return (
-    <Button  disabled={state!=="stable"} clickHandler={() => setState("deleting")}>
+    <Button disabled={state!=="stable"} clickHandler={() => setState("deleting")}>
       Удалить
     </Button>
   );

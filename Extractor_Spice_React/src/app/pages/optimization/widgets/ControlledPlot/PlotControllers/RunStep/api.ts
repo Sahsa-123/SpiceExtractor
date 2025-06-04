@@ -1,8 +1,8 @@
 export interface RunStepButtonProps {
-  stepId: string;
   config: {
     host: string;
     endpoint: string;
+    queryParams?: Record<string, string>; // 👈 сделай опциональным
   };
-  isDisabled:boolean
+  isDisabled: boolean;
 }

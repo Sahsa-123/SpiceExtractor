@@ -12,7 +12,6 @@ export function useWatchFormState(
     ):void{
         useEffect(() => {
             const { unsubscribe } = watch((value) => {
-                console.log(value)
                 actionFunction(value)
             })
             return () => unsubscribe()

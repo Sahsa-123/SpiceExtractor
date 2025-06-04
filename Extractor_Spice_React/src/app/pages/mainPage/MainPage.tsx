@@ -11,7 +11,7 @@ import { useGetData } from "./hooks";
 /*inner modules*/
 import { Graph } from "./widgets/Graph";
 import { Settings, SettingsSyncData, settingsPropps} from "./widgets/Settings";
-import { PagePopUpWindow, PagePopUpWindowI } from "./widgets/PagePopUpWindow";
+import { PagePopUpWindow, PagePopUpWindowI } from "../../../core/widgets/PagePopUpWindow";
 import { UpdateDataForm } from "./widgets/UpdateDataForm";
 /*inner modules*/
 
@@ -26,7 +26,7 @@ export const MainPage = () => {
   /*state*/
   
   /* data fetching */
-  const{data, status} = useGetData(["chart-settings"])
+  const{data, status} = useGetData(["chart-settings"], "http://127.0.0.1:8010", "all_params")
   useEffect(() => {
     dispatch({
       type: "addFieldsets",
@@ -51,7 +51,6 @@ export const MainPage = () => {
         },
       },
       syncFunc: (data:SettingsSyncData) => {
-        console.log(data)
         dispatch({
             type:"patchFieldsets",
             newFieldsets:SettingsSyncToPatch(data)
@@ -69,13 +68,28 @@ export const MainPage = () => {
         }
     }
 
+    const udateDataFormConfig={
+      syncFunc:()=>queryClient.invalidateQueries({ queryKey: ["chart-settings"] }),
+      config:{
+        host:"http://127.0.0.1:8010",
+        endpoint:"upload-zip"
+      }
+    }
+
+    const graphConfig={
+      plotData:pageState.fieldsets,
+      config:{
+        host:"http://127.0.0.1:8010",
+        endpoint:"plots"
+      }
+    }
     return (
       <main className={styles.main} id="app">
-        <Graph outerStyles={styles["main__graph"]} plotData={pageState.fieldsets}/>
+        <Graph outerStyles={styles["main__graph"]} {...graphConfig}/>
 
         <CenteredContainer>
           <PagePopUpWindow config={PagePopUpWindowConfig}>
-            <UpdateDataForm syncFunc={()=>queryClient.invalidateQueries({ queryKey: ["chart-settings"] })}/>
+            <UpdateDataForm {...udateDataFormConfig}/>
           </PagePopUpWindow>
         </CenteredContainer>
 

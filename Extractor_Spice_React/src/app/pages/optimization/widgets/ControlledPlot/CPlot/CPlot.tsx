@@ -90,19 +90,22 @@
 // };
 import React, { useEffect } from 'react';
 import { useAtomValue } from 'jotai';
-import { graphAtom } from '../sharedState';
+import { graphAtom, isGraphFetchingAtom } from '../sharedState';
 import Plot from 'react-plotly.js';
 import styles from './CPlot.module.css';
 import { CPlotI } from './api';
 import { CenteredContainer } from '../../../../../../core/Wrappers';
+import { Loader, parentStyles } from '../../../../../../core/UI/Loader';
 
 export const CPlot: React.FC<CPlotI> = ({ height, width, outerStyles }) => {
   const additionalStyles = {
     height,
     width,
+    position:"relative" as const,
   };
 
   const { data, isError } = useAtomValue(graphAtom);
+  const isFetching = useAtomValue(isGraphFetchingAtom)
 
   // Уведомление о завершении
   useEffect(() => {
@@ -115,8 +118,15 @@ export const CPlot: React.FC<CPlotI> = ({ height, width, outerStyles }) => {
   if (isError) {
     return (
       <CenteredContainer {...additionalStyles} flexDirection="column">
-        <span>Ошибка загрузки графика</span>
-        <span>Проверьте параметры и попробуйте снова</span>
+        {
+          isFetching?
+            <Loader visible={isFetching}/>
+          :
+          <>
+            <span>Ошибка загрузки графика</span>
+            <span>Проверьте параметры и попробуйте снова</span>
+          </>
+        }
       </CenteredContainer>
     );
   }
@@ -125,9 +135,16 @@ export const CPlot: React.FC<CPlotI> = ({ height, width, outerStyles }) => {
   if (!data) {
     return (
       <CenteredContainer {...additionalStyles} flexDirection="column">
-        <span>Запустите шаг</span>
-        <span>или</span>
-        <span>проведите моделирование</span>
+        {
+          isFetching?
+            <Loader visible={isFetching}/>
+          :
+          <>
+            <span>Запустите шаг</span>
+            <span>или</span>
+            <span>проведите моделирование</span>
+          </>
+        }
       </CenteredContainer>
     );
   }
@@ -149,7 +166,7 @@ export const CPlot: React.FC<CPlotI> = ({ height, width, outerStyles }) => {
   ];
 
   return (
-    <div style={additionalStyles} className={`${styles.cplot} ${outerStyles || ''}`}>
+    <div style={additionalStyles} className={`${styles.cplot} ${outerStyles || ''} ${parentStyles}`}>
       {plots.map(({ key, data, layout, error }) => (
         <div key={key} className={styles.cplot__item}>
           <Plot
@@ -177,6 +194,7 @@ export const CPlot: React.FC<CPlotI> = ({ height, width, outerStyles }) => {
           </span>
         </div>
       ))}
+      <Loader visible={isFetching}/>
     </div>
   );
 };
