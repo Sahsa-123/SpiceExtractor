@@ -24,22 +24,22 @@ export const StopForm: React.FC<StopFormProps> = ({
     >
         <div className={styles["form__fieldset"]}>
           <div className={styles["form__input-group"]}>
-            <label>iterNum</label>
+            <label>Число итераций(n): </label>
             <input type="number" {...register("iterNum", { valueAsNumber: true })} />
           </div>
 
           <div className={styles["form__input-group"]}>
-            <label>relMesErr (%)</label>
+            <label>Отн ошибка(%):</label>
             <input type="number" min={0} max={100} step="any" {...register("relMesErr", { valueAsNumber: true })} />
           </div>
 
           <div className={styles["form__input-group"]}>
-            <label>absMesErr</label>
+            <label>Абс ошибка(n):</label>
             <input type="number" step="any" {...register("absMesErr", { valueAsNumber: true })} />
           </div>
 
           <div className={styles["form__input-group"]}>
-            <label>paramDelt (%)</label>
+            <label>&#916; параметра(%):</label>
             <input type="number" min={0} max={100} step="any" {...register("paramDelt", { valueAsNumber: true })} />
           </div>
         </div>

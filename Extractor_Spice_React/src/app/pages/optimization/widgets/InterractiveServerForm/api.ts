@@ -4,9 +4,19 @@ import { z } from "zod";
 import type { ISFContextType } from "./context";
 
 export interface ISFProps<T extends FieldValues> {
-  stepId: string;
-  schema: z.ZodSchema<T>;
+  /** Query-параметры для запроса. Если null — параметры не передаются */
+  queryParams: Record<string, string> | null;
+
+  /** Имя формы (используется для queryKey) */
   formName: string;
+
+  /** Zod-схема для валидации данных */
+  schema: z.ZodSchema<T>;
+
+  /** Контекст, через который передаются данные и register */
+  context: React.Context<ISFContextType<T> | null>;
+
+  /** Конфигурация API */
   config: {
     host: string;
     endpoints: {
@@ -14,6 +24,7 @@ export interface ISFProps<T extends FieldValues> {
       post: string;
     };
   };
-  children: React.ReactNode[]|React.ReactNode;
-  context: React.Context<ISFContextType<T> | null>;
+
+  /** Вложенные компоненты формы */
+  children: React.ReactNode | React.ReactNode[];
 }

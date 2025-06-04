@@ -71,3 +71,12 @@
 .btn--white_n_blue:hover {
   background-color: #2677d4;
 }
+
+.btn--active {
+    background-color: #e6f2ff; /* очень светло-синий фон */
+  border-bottom: 3px solid #3390ff;
+  font-weight: 500;
+  color: #000;
+
+}
+

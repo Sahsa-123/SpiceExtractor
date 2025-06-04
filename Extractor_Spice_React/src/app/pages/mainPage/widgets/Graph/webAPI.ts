@@ -19,7 +19,7 @@ type GetChartPlotReturn={
 
 export async function getChartPlot({
     params,
-    host = "http://127.0.0.1:8000",
+    host = "http://127.0.0.1:8010",
     endpoint = "plots"
 }: GetChartPlotParams
 ):Promise<GetChartPlotReturn>{

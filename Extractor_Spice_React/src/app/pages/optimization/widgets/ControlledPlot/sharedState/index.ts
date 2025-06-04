@@ -1,5 +1,6 @@
 /* состояние */
 export {graphAtom} from "./state"
+export {isGraphFetchingAtom} from "./state"
 /* состояние */
 
 /* типы */

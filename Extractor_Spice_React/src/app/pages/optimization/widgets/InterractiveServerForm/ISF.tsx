@@ -5,11 +5,14 @@ import {
   JSONResponseConverter,
   GETRequest,
 } from "../../../../../core/webAPI";
-import { ISFProps } from "./api";
+import type { ISFProps } from "./api";
 import { useEffect } from "react";
 
+/**
+ * Универсальный контейнер для форм с GET/POST и поддержкой queryParams
+ */
 export const ISF = <T extends FieldValues>({
-  stepId,
+  queryParams,
   formName,
   schema,
   config,
@@ -18,16 +21,21 @@ export const ISF = <T extends FieldValues>({
 }: ISFProps<T>) => {
   const { host, endpoints } = config;
   const queryClient = useQueryClient();
-  const queryKey = [formName, stepId];
 
-  const { 
-    data, 
-    isLoading, 
-    isError 
-  } = useQuery<T>({
+  // 🔧 Подготовка query строки
+  const queryString = queryParams
+    ? Object.entries(queryParams)
+        .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
+        .join("&")
+    : null;
+
+  const queryKey = [formName, queryParams];
+
+  // 📥 Получение данных
+  const { data, isLoading, isError } = useQuery<T>({
     queryKey,
     queryFn: async () => {
-      const res = await GETRequest(host, endpoints.get, `id=${stepId}`);
+      const res = await GETRequest(host, endpoints.get, queryString);
       if (!res.isSuccessful) throw res.data;
 
       const json = await JSONResponseConverter(res.data);
@@ -38,26 +46,28 @@ export const ISF = <T extends FieldValues>({
 
       return validated.data;
     },
-    placeholderData: () => {
-      // Получаем предыдущее значение из кэша
-      return queryClient.getQueryData(['users']);
-    },
   });
 
-  const { 
-    register, 
-    handleSubmit, 
-    reset 
+  const {
+    register,
+    handleSubmit,
+    reset,
   } = useForm<T>();
 
+  // ⏪ Сброс формы при обновлении данных
   useEffect(() => {
     if (data) reset(data);
   }, [data]);
 
+  // 📤 Отправка формы
   const mutation = useMutation({
     mutationFn: async (payload: T) => {
-      const url = `${host}/${endpoints.post}?id=${stepId}`;
-      await fetch(url, {
+      const postUrl =
+        queryParams && Object.keys(queryParams).length
+          ? `${host}/${endpoints.post}?${queryString}`
+          : `${host}/${endpoints.post}`;
+
+      await fetch(postUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -72,9 +82,8 @@ export const ISF = <T extends FieldValues>({
   if (isError || !data) return <>Ошибка загрузки</>;
 
   return (
-    <context.Provider value={{ data, formSubmit, register }}>
+    <context.Provider value={{ data, formSubmit, register, reset }}>
       {children}
     </context.Provider>
   );
 };
-

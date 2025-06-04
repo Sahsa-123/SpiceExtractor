@@ -4,13 +4,14 @@ import { useMutation } from "@tanstack/react-query";
 import { Button } from "../../../../../../../../core/UI";
 import { UploadFormProps } from "../api";
 import { useSetAtom } from "jotai";
-import { graphAtom } from "../../../sharedState";
+import { graphAtom, isGraphFetchingAtom } from "../../../sharedState";
 import { PlotDataSchema } from "../../../sharedState";
 import styles from "./UploadForm.module.css"
 
 export const UploadForm: React.FC<UploadFormProps> = ({ config }) => {
   const { host, endpoint } = config;
   const setGraph = useSetAtom(graphAtom);
+  const setFetching = useSetAtom(isGraphFetchingAtom);
 
   const { register, handleSubmit, formState: { isSubmitting }, reset } = useForm<{
     chartSettings: FileList;
@@ -18,13 +19,14 @@ export const UploadForm: React.FC<UploadFormProps> = ({ config }) => {
 
   const { mutateAsync: uploadZip } = useMutation({
     mutationFn: async (formData: FormData) => {
+      setFetching(true);
       const response = await fetch(`${host}/${endpoint}`, {
         method: "POST",
         body: formData,
       });
 
       if (!response.ok) throw new Error("Ошибка загрузки");
-
+      setFetching(false)
       return response.json();
     },
     onSuccess: (data) => {

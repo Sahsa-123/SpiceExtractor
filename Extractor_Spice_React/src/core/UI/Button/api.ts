@@ -1,4 +1,4 @@
-type permitedStyles = "flat-bottom"|"crossBtn"|"btn--white_n_blue"
+type permitedStyles = "flat-bottom"|"crossBtn"|"btn--white_n_blue"|"btn--active"
 type styleModificationType = permitedStyles[]
 
 

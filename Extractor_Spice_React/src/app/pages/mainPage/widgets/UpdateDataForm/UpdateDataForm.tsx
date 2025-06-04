@@ -18,7 +18,7 @@ export const UpdateDataForm: React.FC<UpdateDataFormI> = ({syncFunc}) => {
   }>();
   const { mutateAsync: uploadZip } = useMutation({
     mutationFn: async (formData: FormData) => {
-      const response = await fetch('http://127.0.0.1:8000/upload-zip', {
+      const response = await fetch('http://127.0.0.1:8010/upload-zip', {
         method: 'POST',
         body: formData,
       });

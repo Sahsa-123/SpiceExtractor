@@ -1,12 +1,13 @@
 import { createContext, useContext } from "react";
 import type { UseFormReturn, FieldValues } from "react-hook-form";
 
-/* Тип для значения контекста */
 export interface ISFContextType<T extends FieldValues> {
   data: T;
   formSubmit: () => void;
   register: UseFormReturn<T>["register"];
+  reset: UseFormReturn<T>["reset"];
 }
+
 
 /* Контекст создаём универсально, но с параметризацией */
 export const createISFContext = <T extends FieldValues>() =>

@@ -1,20 +1,20 @@
 import { btnProps, Button } from "../../../core/UI"
 import styles from "./Header.module.css"
-import { useNavigate } from "react-router"
+import { useNavigate, useLocation } from "react-router";
+import { getStyles } from "./utils";
+
 
 export const Header = ()=>{
   const navigate = useNavigate();
+  const location = useLocation();
   const mainPageBtnConfig:btnProps={
-    styleModification:["flat-bottom"],
+    styleModification:getStyles(location.pathname, "/"),
     clickHandler:()=>navigate("/"),
 
   }
   const optPageBtnConfig:btnProps={
-    styleModification:["flat-bottom"],
-    clickHandler:()=>{
-      console.log("Нажали")
-      return navigate("/opt");
-    }
+    styleModification:getStyles(location.pathname, "/opt"),
+    clickHandler:()=>navigate("/opt")
   }
     return (
     <header className={styles["header"]}>
@@ -25,3 +25,4 @@ export const Header = ()=>{
     </header>
     )
 }
+

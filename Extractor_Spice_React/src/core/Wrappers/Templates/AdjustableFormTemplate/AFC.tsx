@@ -6,10 +6,11 @@ export const AFC: React.FC<AFCI> = ({
     height = "auto",
     width = "auto"
 }) => {
+    const additionalStyles=children.slice(1).length===1?{justifyContent:"center"}:undefined
     return (
         <div className={styles["AFC"]} style={{height, width}}>
             {children[0]}
-            <div className={styles["AFC__interractive-block"]}>
+            <div className={styles["AFC__interractive-block"]} style={additionalStyles}>
                 {children.slice(1)}
             </div>
         </div>

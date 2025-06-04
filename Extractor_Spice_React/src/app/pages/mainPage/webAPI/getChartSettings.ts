@@ -37,7 +37,7 @@ output:object with properties
 
 structure of created elements:-
 */
-export async function getChartSettings(host="http://127.0.0.1:8000", endpoint="all_params"):Promise<getChartSettingsReturnTypes> {
+export async function getChartSettings(host="http://127.0.0.1:8010", endpoint="all_params"):Promise<getChartSettingsReturnTypes> {
   const response = await GETRequest(host, endpoint)
   if(response.isSuccessful){
     const converted = await JSONResponseConverter(response.data)

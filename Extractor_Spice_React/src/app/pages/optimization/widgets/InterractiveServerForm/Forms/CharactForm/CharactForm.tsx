@@ -45,7 +45,7 @@ export const StepsCharactForm: React.FC<CharactFormProps> = ({
                   const path = `${name}.${key}` as Path<StepsCharactSchemaType>;
                   return (
                     <div key={key} className={styles["form__input-group"]}>
-                      <label>{key}</label>
+                      <label>{key}: </label>
                       <input
                         type="number"
                         step="any"

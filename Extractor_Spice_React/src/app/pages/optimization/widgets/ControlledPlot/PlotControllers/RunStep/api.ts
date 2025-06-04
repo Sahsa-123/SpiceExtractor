@@ -4,4 +4,5 @@ export interface RunStepButtonProps {
     host: string;
     endpoint: string;
   };
+  isDisabled:boolean
 }
