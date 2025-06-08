@@ -1,0 +1,27 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 1em;
+  align-items: center;
+}
+
+.message {
+  text-align: center;
+  font-size: 1rem;
+}
+
+.select-wrapper {
+  width: 100%;
+  max-width: 300px;
+  height: 150px;
+  overflow-y: auto
+}
+
+.select {
+  width: 100%;
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

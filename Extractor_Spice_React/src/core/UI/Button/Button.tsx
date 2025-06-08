@@ -20,7 +20,11 @@ export const Button:React.FC<btnProps> = ({
 
     return(
         <button disabled={disabled} type={type} onClick={handleClick} className={className}>
-            {children}
+            {children ? 
+                <span className="btn__text">{children}</span> 
+                : 
+                null
+            }
         </button>
     )
 }

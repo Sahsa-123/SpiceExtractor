@@ -1,0 +1,131 @@
+/* Глобально для расчётов */
+* {
+  box-sizing: border-box;
+}
+
+.selectWrapper {
+  position: relative;
+  font-size: 14px;
+  display: inline-block;
+  width: auto;
+}
+
+.selectDisplay {
+  padding: 0.5em 1.5em 0.5em 0.5em; /* правый отступ уменьшен */
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: white;
+  cursor: pointer;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  position: relative;
+  box-sizing: border-box;
+}
+
+/* Стрелочка */
+.selectDisplay::after {
+  content: "";
+  position: absolute;
+  right: 0.75em; /* ближе к тексту */
+  top: 50%;
+  transform: translateY(-50%) rotate(45deg);
+  border: solid #666;
+  border-width: 0 2px 2px 0;
+  padding: 4px;
+  transition: transform 0.2s ease;
+  pointer-events: none;
+}
+
+.open::after {
+  transform: translateY(-50%) rotate(-135deg);
+}
+
+.selectDisplay:hover {
+  border-color: #888;
+}
+
+.disabled {
+  background-color: #f0f0f0;
+  cursor: not-allowed;
+  color: #aaa;
+}
+
+.optionsList {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  width: 100%;
+  max-height: 150px;
+  overflow-y: auto;
+  background-color: white;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  z-index: 1000;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  visibility: visible;
+  opacity: 1;
+  pointer-events: auto;
+  transition: opacity 0.2s ease;
+}
+
+/* Скрытый список, но остаётся в DOM */
+.hiddenList {
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+  max-height: 0;
+  overflow: hidden;
+}
+
+/* Скрытый список для измерения ширины */
+.hiddenOptions {
+  position: absolute;
+  visibility: hidden;
+  height: auto;
+  white-space: nowrap;
+  padding: 0;
+  margin: 0;
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* Скроллбар */
+.optionsList::-webkit-scrollbar {
+  width: 4px;
+  height: 2px;
+}
+
+.optionsList::-webkit-scrollbar-thumb {
+  background-color: #ccc;
+  border-radius: 1px;
+}
+
+.optionsList::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.optionsList::-webkit-scrollbar-thumb:hover {
+  background-color: #bbb;
+}
+
+.option {
+  padding: 0.5em;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.option:hover {
+  background-color: #f0f0f0;
+  outline: 1px solid #3390ff;
+}
+
+.option--selected {
+  background-color: #e6f2ff;
+}
+
+.option--selected:hover {
+  background-color: #e6f2ff;
+}
