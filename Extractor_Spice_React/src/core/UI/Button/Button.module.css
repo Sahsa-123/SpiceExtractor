@@ -24,6 +24,13 @@
     cursor: pointer;
 }
 
+.btn--active {
+  background-color: #e6f2ff; /* очень светло-синий фон */
+  border-bottom: 3px solid #3390ff;
+  font-weight: 500;
+  color: #000;
+
+}
 .btn:active {
   filter: brightness(0.9); /* делает цвет немного бледнее */
 }
