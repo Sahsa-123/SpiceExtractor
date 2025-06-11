@@ -1,0 +1,62 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
+  align-items: center;
+  overflow: auto;
+}
+
+/* Контейнер для всех fieldset — горизонтальный ряд */
+.form__inputPart {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 1em;
+  width: 100%;
+
+  overflow: auto;
+}
+
+.form__fieldset {
+  display: flex;
+  flex-direction: column;
+  padding: 1em;
+  flex: 1;
+  gap: 1em;
+  overflow: auto;
+  max-width: 350px;
+  height: 100%;
+  
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+.form__legend {
+  font-weight: bold;
+  padding: 0 0.5em;
+  font-size: 1rem;
+}
+
+.form__input-group{
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5em
+}
+
+label {
+  font-size: 0.85rem;
+}
+
+input[type="number"] {
+  padding: 4px;
+  font-size: 0.9rem;
+}
+
+input[type="checkbox"] {
+  margin-right: 0.5rem;
+  transform: scale(1.1);
+}
+

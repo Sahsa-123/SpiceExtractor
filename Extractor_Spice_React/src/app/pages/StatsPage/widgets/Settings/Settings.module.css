@@ -1,0 +1,26 @@
+.wrapper{
+    overflow-y: auto;
+}
+.settings__form{
+    --settings-form-gap: 15px;
+    
+    display: flex;
+    height: 100%;
+    justify-content: space-between;
+    align-items: stretch;
+    gap: var(--settings-form-gap);
+}
+  
+.settings__form>*{
+    /* from flex-pattern video */
+    flex-basis: 100%;
+    margin: 0;
+}
+
+.settings__empty-fieldset{
+    border: 1px solid rgb(204, 204, 204);
+    border-radius:8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}

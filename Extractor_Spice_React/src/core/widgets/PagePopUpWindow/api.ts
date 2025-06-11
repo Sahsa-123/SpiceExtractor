@@ -4,7 +4,7 @@ import { btnProps } from "../../UI"
 
 export interface PagePopUpWindowI {
     config:{
-        openBtn:Pick<btnProps, "styleModification"|"children">,
+        openBtn:Pick<btnProps, "styleModification"|"children"|"disabled">,
         closeBtn:Pick<btnProps, "styleModification"|"children">
     }
     outerStyles?: string|null 

@@ -1,27 +1,29 @@
 import { btnProps, Button } from "../../../core/UI"
 import styles from "./Header.module.css"
-import { useNavigate } from "react-router"
+import { useNavigate, useLocation } from "react-router";
+import { getStyles } from "./utils";
+
 
 export const Header = ()=>{
   const navigate = useNavigate();
-  const mainPageBtnConfig:btnProps={
-    styleModification:["flat-bottom"],
-    clickHandler:()=>navigate("/"),
+  const location = useLocation();
 
+  const mainPageBtnConfig:btnProps={
+    styleModification:getStyles(location.pathname, "/"),
+    clickHandler:()=>navigate("/"),
   }
   const optPageBtnConfig:btnProps={
-    styleModification:["flat-bottom"],
-    clickHandler:()=>{
-      console.log("Нажали")
-      return navigate("/opt");
-    }
+    styleModification:getStyles(location.pathname, "/opt"),
+    clickHandler:()=>navigate("/opt")
   }
-    return (
+  
+  return (
     <header className={styles["header"]}>
         <ul className={`${styles["header__menu"]}`} id="header-modal-menu">
-          <li><Button {...mainPageBtnConfig}>Статистическая обработка</Button></li>
+          <li><Button {...mainPageBtnConfig}>Предварительная обработка</Button></li>
           <li><Button {...optPageBtnConfig}>Оптимизация</Button></li>
         </ul>
     </header>
-    )
+  )
 }
+

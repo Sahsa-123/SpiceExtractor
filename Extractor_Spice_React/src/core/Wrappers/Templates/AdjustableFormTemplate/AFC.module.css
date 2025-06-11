@@ -1,0 +1,14 @@
+.AFC{
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    align-items: center;
+    justify-content: space-between;
+    overflow: auto;
+}
+
+.AFC__interractive-block{
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+}

@@ -1,0 +1,37 @@
+.main{
+  --main-flex-gap:20px;
+
+  display: flex;
+  flex-direction: column;
+  gap: var(--main-flex-gap);
+  overflow-y: auto;
+
+  padding: 0 25px;
+  border-radius:8px;
+}
+
+.main>*{
+  width: 100%;
+}
+
+.main__graph{
+  flex-grow: 1;
+  border: 1px solid rgb(204, 204, 204);
+  border-radius:inherit;
+  padding: 10px;
+}
+
+.main__settings{
+  height: 30%;
+}
+
+.main__loader-container{
+  height: 100%;
+  border-radius: inherit;
+  position:relative
+}
+
+.main--on-error>*{
+  border: 1px solid rgb(204, 204, 204);
+  border-radius: inherit;
+}
