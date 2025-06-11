@@ -10,6 +10,7 @@ export const  CenteredContainer: React.FC<centeredContainerI> = ({
 
     flexDirection = "row",
     gap="10px",
+    position="static"
 }) => {
     const additionalStyles={
         width,
@@ -19,6 +20,7 @@ export const  CenteredContainer: React.FC<centeredContainerI> = ({
     
         flexDirection,
         gap,
+        position
     }
     return (
         <div className={`${styles.container}`} style={additionalStyles}>

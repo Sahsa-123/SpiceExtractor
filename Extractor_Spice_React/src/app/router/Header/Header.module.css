@@ -1,5 +1,6 @@
 .header{
   padding: 0 25px;
+  overflow-x: auto;
 }
 
 .header__menu{
@@ -8,4 +9,6 @@
   display: flex;
   flex-direction: row;
   gap: var(--header-menu-gap-x);
+  overflow-x: auto;
+  width: 100%;
 }

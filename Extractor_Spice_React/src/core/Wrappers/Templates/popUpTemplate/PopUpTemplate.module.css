@@ -10,12 +10,12 @@
     align-items: center;
     justify-content: center;
     
-    opacity: 0; /* Начальное состояние - прозрачный */
-    visibility: hidden; /* Скрываем из DOM, но оставляем место */
+    opacity: 0; 
+    visibility: hidden; 
     transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
 }
 
 .popupTemplate.visible {
-    opacity: 1; /* Видимый */
-    visibility: visible; /* Показываем */
+    opacity: 1;
+    visibility: visible;
 }

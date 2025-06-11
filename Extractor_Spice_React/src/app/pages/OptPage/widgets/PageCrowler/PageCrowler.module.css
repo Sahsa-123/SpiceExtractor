@@ -1,0 +1,57 @@
+/*Обязательно иметь height*/
+.crowler {
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+
+  border: 1px solid #ccc;
+  border-radius: 6px;
+
+  font-family: sans-serif;
+}
+
+.tabs {
+  display: flex;
+  width: 100%;
+  overflow-y: auto;
+
+  background-color: #f0f0f0;
+}
+
+.tab {
+  padding: 0.5rem 1rem;
+  background: none;
+  cursor: pointer;
+  font-weight: 500;
+  white-space: nowrap;
+  min-width: 100px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  border: 2px solid transparent;
+  border-bottom: none;
+  border-top-right-radius: 6px ;
+  border-top-left-radius: 6px ;
+
+  transition: background-color ease 0.3s,
+              border-color ease 0.3s
+}
+
+.tab:hover {
+  background-color: #d1d1d1;
+}
+
+.tab--active {
+  background-color: white;
+  border: 2px solid #007bff;
+  border-bottom-width: 0px;
+}
+
+.tab--active:hover {
+  background-color: white;
+}
+
+.content {
+  background-color: white;
+  overflow: auto;
+  height: 100%;/*Обязательно должен быть задан иначе все вложенный контекнт, если он вычисляет процентом высоту, посыпитсяя*/
+}

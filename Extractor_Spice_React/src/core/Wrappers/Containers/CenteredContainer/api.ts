@@ -13,5 +13,6 @@ export interface centeredContainerI{
     gap?: 
         `${number}px`|
         `${number}px ${number}px`;
+    position?:"relative"|"absolute"|"static"
 }
 

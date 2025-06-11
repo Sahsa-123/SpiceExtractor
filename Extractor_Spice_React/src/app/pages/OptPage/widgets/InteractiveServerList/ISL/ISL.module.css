@@ -1,0 +1,57 @@
+/* БЛОК: интерактивный список */
+.ISL {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  padding: 5px;
+  overflow: auto;
+  padding: 10px;
+}
+
+/* ЭЛЕМЕНТ: один шаг */
+.ISL__elem {
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+
+  outline: 1px solid #ccc;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+  /* ✨ Мягкие переходы */
+  transition:
+    outline-width 0.15s ease,
+    outline-color 0.2s ease,
+    background-color 0.2s ease;
+}
+
+/* МОДИФИКАТОР: hover — только утолщённый outline */
+.ISL__elem:hover {
+  outline-width: 3px;
+}
+
+.ISL__elem:not(:last-child){
+  margin-bottom: 0.7em
+}
+
+/* МОДИФИКАТОР: выбранный элемент */
+.ISL__elem--selected {
+  background-color: #d0e7ff;
+  font-weight: bold;
+  outline-color: #3390ff;
+}
+
+/* ЭЛЕМЕНТ: поле ввода внутри списка */
+.ISL__input {
+  display: inline-block;
+  outline: none;
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+/* МОДИФИКАТОР: убрать паддинг (например, для input) */
+.ISL__elem--no-padding {
+  padding: 0;
+}

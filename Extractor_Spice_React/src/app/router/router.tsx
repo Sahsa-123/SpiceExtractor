@@ -1,20 +1,23 @@
 import { createBrowserRouter } from 'react-router'
-import { BasicLayout } from './layout'
-import { MainPage } from '../pages'
-import { OptimizationPage } from '../pages/optimization'
+import { AppLayout } from "./AppLayout"
+import { 
+  StatsPage,
+  OptPage
+ } from '../pages'
 
 export const router = createBrowserRouter([
-    {
-      path:"/",
-      element: <BasicLayout/>,
-      children:[{
+  {
+    path:"/",
+    element: <AppLayout/>,
+    children:[
+      {
         index:true,
-        element:<MainPage/>
+        element:<StatsPage/>
       },
       {
         path:"/opt",
-        element:<OptimizationPage/>
+        element:<OptPage/>
       }
     ]
-    }
+  }
 ])
