@@ -1,0 +1,15 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+COPY server/serverRequirements.txt ./requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY server/project/ ./project/
+
+RUN rm -f ./project/db0.db && \
+    find ./project/optimize/databases -name "*.db" -delete || true
+
+EXPOSE 8010
+
+CMD ["python", "./project/api.py"]
