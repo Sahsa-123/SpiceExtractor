@@ -3,6 +3,4 @@
 documentation
 tree.txt
 goodDataBases
-Dockerfile.backend
-Dockerfile.frontend
-docker-compose.yml
+docker
