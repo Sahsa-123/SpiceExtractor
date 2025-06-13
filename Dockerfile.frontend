@@ -2,11 +2,11 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-COPY Extracot_Spice_React/package*.json ./Extracot_Spice_React/
-RUN cd Extracot_Spice_React && npm install
+COPY Extractor_Spice_React/package*.json ./Extractor_Spice_React/
+RUN cd Extractor_Spice_React && npm install
 
-COPY Extracot_Spice_React ./Extracot_Spice_React
-WORKDIR /app/Extracot_Spice_React
+COPY Extractor_Spice_React ./Extractor_Spice_React
+WORKDIR /app/Extractor_Spice_React
 
 EXPOSE 5173
 
