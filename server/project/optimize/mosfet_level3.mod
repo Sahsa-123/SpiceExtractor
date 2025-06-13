@@ -1,0 +1,11 @@
+.model nch nmos LEVEL=3
++ LD=0.1u WD=.15u
++ RSH=30 RS=10k RD=10k 
++ CJ=0 CJSW=0 MJSW=0.33
++ JS=0 JSW=1e-9
++ BEX=-1.5 TCV=2m 
++ TOX=200
++ VTO=0.7 PHI=1 GAMMA=1
++ ETA=10 XJ=0.1u
++ UO=400 THETA=1m
++ VMAX=100k KAPPA=0

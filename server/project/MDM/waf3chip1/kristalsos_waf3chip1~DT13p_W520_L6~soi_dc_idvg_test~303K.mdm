@@ -1,0 +1,104 @@
+! VERSION = 6.00
+BEGIN_HEADER
+ ICCAP_INPUTS
+  vg         V  G GROUND SMU2 1E-005 LIN        1    0          -5          6   -1       
+  vb         V  B GROUND SMU4 0.01 LIN        2    0          1         1    2        
+  vd         V  D GROUND SMU1 0.1 LIN        3    -0.05       -5          6    -0.99      
+  vs         V  S GROUND SMU3 0.1 CON        0
+  ve         V  E GROUND SMU5 0.1 CON        0
+ ICCAP_OUTPUTS
+  id         I  D GROUND SMU1 B
+  ib         I  D GROUND SMU4 B
+  ig         I  D GROUND SMU2 B
+END_HEADER
+
+
+BEGIN_DB
+ ICCAP_VAR vd	-0.0500
+ ICCAP_VAR vb	-0.0000
+ ICCAP_VAR ve	0
+ ICCAP_VAR vs	0
+
+ #vg              id              ig              ib
+  0.0000		-3.53456e-10		-1.02553e-08		0e-3
+  -1.0000		-3.65973e-10		-1.01913e-08		0e-3
+  -2.0000		-2.28206e-05		-1.02550e-08		0e-3
+  -3.0000		-8.30889e-05		-1.02427e-08		0e-3
+  -4.0000		-1.35064e-04		-1.02863e-08		0e-3
+  -5.0000		-1.80960e-04		-1.02189e-08		0e-3
+END_DB
+
+BEGIN_DB
+ ICCAP_VAR vd	-1.0400
+ ICCAP_VAR vb	-0.0000
+ ICCAP_VAR ve	0
+ ICCAP_VAR vs	0
+
+ #vg              id              ig              ib
+  0.0000		-5.77092e-10		-1.00745e-08		0e-3
+  -1.0000		-5.71847e-10		-1.01106e-08		0e-3
+  -2.0000		-9.50027e-05		-1.02286e-08		0e-3
+  -3.0000		-9.88698e-04		-1.02718e-08		0e-3
+  -4.0000		-2.14671e-03		-1.02410e-08		0e-3
+  -5.0000		-3.16466e-03		-1.01519e-08		0e-3
+END_DB
+
+BEGIN_DB
+ ICCAP_VAR vd	-2.0300
+ ICCAP_VAR vb	-0.0000
+ ICCAP_VAR ve	0
+ ICCAP_VAR vs	0
+
+ #vg              id              ig              ib
+  0.0000		-7.20382e-10		-1.00647e-08		0e-3
+  -1.0000		-7.08103e-10		-1.01637e-08		0e-3
+  -2.0000		-9.83921e-05		-1.02090e-08		0e-3
+  -3.0000		-1.06598e-03		-1.02257e-08		0e-3
+  -4.0000		-2.92257e-03		-1.02184e-08		0e-3
+  -5.0000		-4.85098e-03		-1.02808e-08		0e-3
+END_DB
+
+BEGIN_DB
+ ICCAP_VAR vd	-3.0200
+ ICCAP_VAR vb	-0.0000
+ ICCAP_VAR ve	0
+ ICCAP_VAR vs	0
+
+ #vg              id              ig              ib
+  0.0000		-9.04798e-10		-1.01691e-08		0e-3
+  -1.0000		-8.77380e-10		-1.02000e-08		0e-3
+  -2.0000		-1.01948e-04		-1.02450e-08		0e-3
+  -3.0000		-1.10650e-03		-1.02564e-08		0e-3
+  -4.0000		-3.07879e-03		-1.02316e-08		0e-3
+  -5.0000		-5.63335e-03		-1.02392e-08		0e-3
+END_DB
+
+BEGIN_DB
+ ICCAP_VAR vd	-4.0100
+ ICCAP_VAR vb	-0.0000
+ ICCAP_VAR ve	0
+ ICCAP_VAR vs	0
+
+ #vg              id              ig              ib
+  0.0000		-1.04427e-09		-1.02407e-08		0e-3
+  -1.0000		-9.56058e-10		-1.01683e-08		0e-3
+  -2.0000		-1.04725e-04		-1.02285e-08		0e-3
+  -3.0000		-1.13667e-03		-1.01964e-08		0e-3
+  -4.0000		-3.16837e-03		-1.02425e-08		0e-3
+  -5.0000		-5.83339e-03		-1.02612e-08		0e-3
+END_DB
+
+BEGIN_DB
+ ICCAP_VAR vd	-5.0000
+ ICCAP_VAR vb	-0.0000
+ ICCAP_VAR ve	0
+ ICCAP_VAR vs	0
+
+ #vg              id              ig              ib
+  0.0000		-1.42932e-09		-1.00811e-08		0e-3
+  -1.0000		-1.17183e-09		-1.01447e-08		0e-3
+  -2.0000		-1.09053e-04		-1.01652e-08		0e-3
+  -3.0000		-1.17161e-03		-1.01874e-08		0e-3
+  -4.0000		-3.24428e-03		-1.01784e-08		0e-3
+  -5.0000		-5.97751e-03		-1.02137e-08		0e-3
+END_DB

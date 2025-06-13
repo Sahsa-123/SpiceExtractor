@@ -1,0 +1,85 @@
+def calculate_threshold_voltage(self):
+        """
+        Расчет порогового напряжения (U0) и параметра крутизны (kp) по данным Id-Vg
+        
+        Параметры:
+            data: Экспериментальные данные
+            W: Ширина канала (м)
+            L: Длина канала (м)
+            TOX: Толщина оксида (м) - ВАЖНО: у вас стоит 0, нужно указать реальное значение!
+        
+        Возвращает:
+            U0: Пороговое напряжение (В)
+            kp: Параметр крутизны (А/В^2)
+        """
+        # Получаем и сортируем данные измерений
+        data = np.array(sorted(self.mes_idvg, key=lambda mes: mes["Inputs"]["vd"])[0]['data'])[:, :2]
+        W = fstf(self.params["MAIN.W"])
+        L = fstf(self.params["MAIN.L"])
+        TOX = fstf(self.params["TOX"])
+        
+        # Находим шаг изменения напряжения на затворе
+        for i in self.steps_idvg:
+            if 'vg' in i[0]:
+                step = float(i[0].split()[-1])
+                break
+        
+        # 1. Извлекаем данные измерения
+        vd0 = float(sorted(self.mes_idvg, key=lambda mes: mes["Inputs"]["vd"])[0]['Inputs']['vd'])
+        esio2 = 3.4515e-11  # Диэлектрическая проницаемость SiO2 (Ф/м)
+        
+        # Разделяем данные на напряжение и ток
+        Vg = data[:, 0]  # Напряжение на затворе
+        Id = data[:, 1]  # Ток стока
+        
+        # 2. Вычисляем производные с сглаживанием
+        # Первая производная (крутизна характеристики)
+        dId_dVg = np.diff(Id) / np.diff(Vg)
+        # Используем средние точки для согласования размерностей
+        Vg_smooth = (Vg[:-1] + Vg[1:]) / 2  
+        
+        # Настройки сглаживания
+        window_size = 10
+        try:
+            from scipy.signal.windows import gaussian  # Новый импорт для SciPy >= 1.1.0
+        except ImportError:
+            from scipy.signal import gaussian  # Старый импорт для обратной совместимости
+        
+        # Создаем и нормализуем гауссово окно
+        g = gaussian(window_size, std=2)
+        g /= np.sum(g)
+        
+        # Сглаживаем первую производную
+        dId_dVg_smooth = np.convolve(dId_dVg, g, mode='same')
+        
+        # Вторая производная (для поиска точки перегиба)
+        # Важно: используем Vg_smooth соответствующей длины
+        d2Id_dVg2 = np.diff(dId_dVg_smooth) / np.diff(Vg_smooth)
+        d2Id_dVg2_smooth = np.convolve(d2Id_dVg2, g, mode='same')
+        
+        # 3. Поиск точки перегиба (порогового напряжения)
+        max_idx = np.argmax(dId_dVg_smooth)  # Индекс максимума крутизны
+        
+        # Уточняем точку, где вторая производная меняет знак
+        for m in range(max(max_idx-1, 0), min(max_idx+1, len(d2Id_dVg2_smooth)-1)):
+            if d2Id_dVg2_smooth[m] > 0 and d2Id_dVg2_smooth[m+1] < 0:
+                max_idx = m
+                break
+        
+        # 4. Точный расчет порогового напряжения
+        delta_d2 = d2Id_dVg2_smooth[max_idx] - d2Id_dVg2_smooth[max_idx+1]
+        
+        # Линейная интерполяция для точного определения
+        dk = d2Id_dVg2_smooth[max_idx] / delta_d2 if delta_d2 != 0 else 0
+        Vg_th = Vg[max_idx] + step * dk
+        Id_th = Id[max_idx] + (Id[max_idx+1] - Id[max_idx]) * dk
+        dId_dVg_th = dId_dVg_smooth[max_idx] + (dId_dVg_smooth[max_idx+1] - dId_dVg_smooth[max_idx]) * dk
+        
+        # 5. Расчет параметров
+        
+        coef = W * esio2 / TOX * vd0
+        U0 = 1e4 * (dId_dVg_th * L) / coef
+        kp = U0 * esio2 / TOX / 1e4
+        self.params['U0'] = U0
+        self.params['kp'] = kp
+        return U0, kp

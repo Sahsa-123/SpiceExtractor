@@ -1,0 +1,2270 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body><w:p><w:pPr><w:pStyle w:val="code"/></w:pPr><w:r><w:t><![CDATA[classdef Params_extraction_final < matlab.apps.AppBase
+
+    % Properties that correspond to app components
+    properties (Access = public)
+        UIFigure              matlab.ui.Figure
+        Menu_settings         matlab.ui.container.Menu
+        Menu                  matlab.ui.container.Menu
+        Menu_average          matlab.ui.container.Menu
+        Menu_optimization     matlab.ui.container.Menu
+        Menu_big_table        matlab.ui.container.Menu
+        Menu_params           matlab.ui.container.Menu
+        Menu_spice            matlab.ui.container.Menu
+        idvdEditField         matlab.ui.control.NumericEditField
+        idvgEditField_2Label  matlab.ui.control.Label
+        idvgEditField         matlab.ui.control.NumericEditField
+        idvgEditFieldLabel    matlab.ui.control.Label
+        idvdSpinner           matlab.ui.control.Spinner
+        idvdLabel             matlab.ui.control.Label
+        idvgSpinner           matlab.ui.control.Spinner
+        idvgSpinnerLabel      matlab.ui.control.Label
+        Label                 matlab.ui.control.Label
+        ErrValue_idvd         matlab.ui.control.Label
+        ErrValue_idvg         matlab.ui.control.Label
+        Label_OutputBox       matlab.ui.control.Label
+        Label_TransferBox_5   matlab.ui.control.Label
+        Label_TransferBox_4   matlab.ui.control.Label
+        Label_TransferBox_3   matlab.ui.control.Label
+        Transfer_Str          matlab.ui.control.ListBox
+        TransferBox           matlab.ui.control.ListBox
+        Output_Str            matlab.ui.control.ListBox
+        OutputBox             matlab.ui.control.ListBox
+        UITable               matlab.ui.control.Table
+        ErrLabel_idvd         matlab.ui.control.Label
+        ErrLabel_idvg         matlab.ui.control.Label
+        Output_logX_Check     matlab.ui.control.CheckBox
+        Output_logY_Check     matlab.ui.control.CheckBox
+        Transfer_logY_Check   matlab.ui.control.CheckBox
+        Transfer_logX_Check   matlab.ui.control.CheckBox
+        UIAxes_Output         matlab.ui.control.UIAxes
+        UIAxes_Transfer       matlab.ui.control.UIAxes
+    end
+
+
+    properties (Access = public)
+        flag_to_stop_s;
+        s;
+        tempcell;
+        x;
+        y;
+        W;
+        L;
+        TOX;
+        RS;
+        U0;
+        kp;
+        theta;
+        VTO;
+        data;
+        TransferParam;
+        OutputParam;
+        h_exp_idvg;
+        h_exp_idvd;
+        h_spice_idvg;
+        h_spice_idvd
+        Param_window;
+        Table_changelist;
+        ub;
+        lb;
+        exp_idvd;
+        exp_idvg;
+        StrucParam;
+        StrucParam_output;
+        check;
+        check_2;
+        check_struct;  
+        check_struct_output;
+        count_str=0;
+        ind_avg = 0;
+        ind_spice = 0;
+
+        exist_avg = 0;
+        exist_avg_ar=0;
+        exist_params = 0;
+        exist_spice= 0 ;
+        TRANSFER_flag = 0;
+        OUT_flag = 0;
+        
+        OPTI_X
+        OPTI_Y
+        
+        spice_params;
+        name_param;
+        mmin;
+        mmax;
+        current;
+        edit_param_value;
+        
+        project_name;
+        spice_file_name;
+        initParam;
+
+        name_data;
+        name_folder_proj;
+        spice_name;
+        names;
+        names_restore;
+
+        value6_; %выбранные транзисторы для idvg
+        value3_;%выбранные транзисторы для idvd
+        a_data;%один элемент структуры используюийся для подсчета среднего
+    end
+
+    methods (Access = public)
+
+        function Params (app, data)
+            if app.exist_avg ~= 0
+                n = app.ind_avg; 
+                app.W = 1e-2;%6.85e-6;
+                app.L = 1e-6;
+                app.TOX = 1e-7;
+                app.theta = 0.35;
+                %% RS (idvd с самым большим напряжением на затворе)производная
+                diffY = diff(data(n).Meas(2).Values(end).XY(:,2)); %Учитывается только один транзистор
+                X = linspace(0,data(n).Meas(2).Values(end).XY(end,1),length(diffY));
+                %нормирование производной (максимальное значение = 1 и так до 0)
+                max1 = max(diffY);
+                diffY_norm = zeros(length(diffY),1);
+                for i = 1:length(diffY)
+                    diffY_norm(i)=diffY(i)/max1;
+                end
+                %Находим крутой участок, отсекаем, когда становится пологим
+                ind_slope = 1;
+                    for i = 1:length(diffY_norm)
+                        if diffY_norm(i) < 0.5
+                            ind_slope = i;
+                            break;
+                        end
+                    end
+                %график этого крутого участка
+                X = data(n).Meas(2).Values(end).XY(1:ind_slope,1);
+                Y = data(n).Meas(2).Values(end).XY(1:ind_slope,2);
+                %расчитываем коэф-ты k, b (y=kx+b) и сторим прямую приближенную крутому участку;
+                poly_coeff = polyfit(X,Y,1);
+                Y1 = polyval(poly_coeff,X);
+                %расчет RS
+                app.RS = abs(1/poly_coeff(1));
+        
+%                 %% U0 (idvg с самым маленьким напряжением на стоке)
+%                 step = double(data(n).Meas(1).vg_diap.Step);
+%                 num_of_points_idvg = double(data(n).Meas(1).vg_diap.Num);%length(app.data(data_num).XY);
+%                 vd0 = data(n).Meas(1).Values(1).Param;
+%                 esio2 = 3.4515E-11;
+%                 X = data(n).Meas(1).Values(1).XY(:,1);
+%                 Y = data(n).Meas(1).Values(1).XY(:,2);
+%                 Y1 = diff(Y,1);
+%                 X1 = linspace(0,data(n).Meas(1).Values(1).XY(end,1),length(Y1));
+%                 g = gausswin(10);
+%                 g = g/sum(g);
+%                 Y1 = conv(Y1,g,'same');
+%                 Y2 = diff(Y1,1);
+%                 Y2 = conv(Y2,g,'same');
+%                 X2 = linspace(0,data(n).Meas(1).Values(1).XY(end,1),length(Y2));
+%                 [~,max_ind] = max(Y1);
+%                 for m = max_ind-1:1:max_ind+1
+%                     if (Y2(m)>0)&&(Y2(m+1)<0)
+%                         max_ind = m;
+%                     end
+%                 end
+%                 delta_d2 = Y2(max_ind)-Y2(max_ind+1);
+%                 delta_I = Y(max_ind)-Y(max_ind+1);
+%                 delta_U = X(max_ind)-X(max_ind+1);
+%                 coef_svz = app.W * esio2 / app.TOX * vd0;
+%                 dk = Y2(max_ind)/delta_d2;
+%                 vgx = X(max_ind)+ step*dk;
+%                 idx = Y(max_ind) + (Y(max_ind+1)-Y(max_ind))*dk;
+%                 idx1 = Y1(max_ind) + (Y1(max_ind+1)-Y1(max_ind))*dk;
+%                 app.U0 = 1e4 * (idx1 * app.L)/coef_svz;
+%                 %app.kp = (delta_I/delta_U) * (app.L/app.W)/vd0/1000;
+%                 %app.U0 = app.U0./100;
+%                 app.U0 = 600.12;
+%                 app.kp = app.U0 * esio2/app.TOX/10000;
+                %% VTO (idvg с самым маленьким напряжением на стоке)
+                %график производной
+                diffY = diff(data(n).Meas(1).Values(1).XY(:,2));
+                X = linspace(0,data(n).Meas(1).Values(1).XY(end,1),length(diffY));
+                %сглаживание графика производной
+                g = gausswin(10);
+                g = g/sum(g);
+                diffY1 = conv(diffY, g, 'same');
+                [~,ind] = max(diffY1);
+                %Интерполяция и вычисление параметра
+                Tang = (data(n).Meas(1).Values(1).XY(ind+1,1) - data(n).Meas(1).Values(1).XY(ind,1))/...
+                (data(n).Meas(1).Values(1).XY(ind+1,2) - data(n).Meas(1).Values(1).XY(ind,2));
+                V1 = data(n).Meas(1).Values(1).XY(ind,1) - Tang * data(n).Meas(1).Values(1).XY(ind,2);
+                app.VTO = V1 + data(n).Meas(1).Values(1).Param;         
+                %app.RS = 0.5255;
+                %app.U0 = 650;
+                %initParam - string array
+                app.initParam = ["VTO" app.VTO*0.2 app.VTO*1.8 app.VTO;"Rs" app.RS*0.2 app.RS*1.8 app.RS;...
+                "Tox" app.TOX*0.2 app.TOX*1.8 app.TOX;...
+                "Theta" app.theta*0.2 app.theta*1.8 app.theta;"L" app.L*0.2 app.L*1.8 app.L;"W" app.W*0.2 app.W*1.8 app.W];
+                format long;
+                app.UITable.Data = cellstr(app.initParam);
+                p = app.UITable;
+                %запись расчитанных параметров в глобальную переменную параметров
+%                 app.initParam = cell(app.initParam);
+                app.name_param = string(app.name_param);
+                for i = 1 : length(app.initParam)
+                    for j = 2 : length(app.name_param)
+                        if app.initParam(i,1) == app.name_param(j)
+                            app.mmin(j) = app.initParam(i,2);
+                            app.spice_params{1,2} = cellstr(app.mmin);
+                            app.mmax(j) = app.initParam(i,3);
+                            app.spice_params{1,3} = cellstr(app.mmax);
+                            app.current(j) = app.initParam(i,4);
+                            app.spice_params{1,4} = cellstr(app.current);
+                            break;
+                        end
+                    end
+                end
+            else
+                fig = app.UIFigure;
+                uialert(fig,'Не подсчитано среднее','Ошибка');
+            end 
+        end
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        function g = spice_model(app,params,xdata)
+            if (isempty(app.h_spice_idvg)==0)
+                delete(app.h_spice_idvg);
+            end
+            app.h_spice_idvg = [];
+
+            if (isempty(app.h_spice_idvd)==0)
+                delete(app.h_spice_idvd);
+            end
+            app.h_spice_idvd = [];
+
+
+            %n = length(app.data); %МЕНЯЛИ 24.03
+            n=1;
+
+            app.exist_spice = app.exist_spice+1;
+            
+            project_path = string(app.project_name);
+            netlist_idvg = project_path+"\BS170_idvg.cir";
+            netlist_idvd = project_path+"\BS170_idvd.cir";
+            spice_path = string(app.spice_file_name);
+
+            %app.initParam(:,4) = cellstr(string(params));
+             app.UITable.Data(:,4) = cellstr(string(params));
+             code_idvg = ["\r\n"+... 
+                "M1 Vd Vg 0 0 BS170\r\n"+...
+                "V1 Vg 0 0\r\n"+...
+                "V2 Vd 0 {X}\r\n"+...
+                ".model BS170 NMOS(level=3 %s)\r\n"+...
+                ".step param X LIST %s\r\n"+...
+                ".dc V1 %s\r\n"+...
+                ".backanno\r\n"+...
+                ".end\r\n"];
+            code_idvd = ["\r\n"+...
+                "M1 Vd Vg 0 0 BS170\r\n"+...
+                "V1 Vg 0 {X}\r\n"+...
+                "V2 Vd 0 0\r\n"+...
+                ".model BS170 NMOS(level=3 %s)\r\n"+...
+                ".step param X LIST %s\r\n"+...
+                ".dc V2 %s\r\n"+...
+                ".backanno\r\n"+...
+                ".end\r\n"];
+
+
+            %model_params = sprintf("W=%g L=%g VTO=%g Uo=%g RS=%g tox=%g theta=%g", app.W, app.L, app.VTO, app.U0, app.RS, app.TOX, app.theta);%kp - не выведен в приложении
+
+            model_params = "";
+            if (exist(string(app.project_name) + '\' +"ParamTable.xls",'file')~=0)                                                             %&&false%%ДОБАВИЛ FALSE ВРЕМЕННО
+                table = readtable(string(app.project_name) + '\' +"ParamTable.xls");
+                table = table2cell(table);%преобразуем в массив ячеек
+                if ~isempty(app.Table_changelist)
+                    changeSize = size(app.Table_changelist);
+                    for i = 1:changeSize(1)
+%                         for j = 1:height(table)
+%                             if string(table{j,1}) == string(app.initParam(app.Table_changelist(i,1),1))
+%                                 table{j,app.Table_changelist(i,2)} = app.initParam(app.Table_changelist(i,1),app.Table_changelist(i,2));
+%                                 break;
+%                             end
+%                         end
+
+                        for j = 1:height(table)
+                            if string(table{j,1}) == string(app.UITable.Data{app.Table_changelist(i,1),1})
+                                table{j,app.Table_changelist(i,2)} = app.UITable.Data{app.Table_changelist(i,1),app.Table_changelist(i,2)};
+                                break;
+                            end
+                        end
+                    end
+                    app.Table_changelist = [];
+                end
+                j = 1;
+                for i = 1:height(table)
+%                     if string(table{i,1})==string(app.initParam(j,1))
+%                         table{i,4} = app.initParam(j,4);
+%                         table{i,2} = 0.2*table{i,4};
+%                         table{i,3} = 1.8*table{i,4};
+%                         j=j+1;
+%                         if j > length(app.initParam)
+%                             j = length(app.initParam);
+%                         end
+%                     end
+
+                        if string(table{i,1})==string(app.UITable.Data{j,1})
+                        table{i,4} = app.UITable.Data{j,4};
+                        table{i,2} = 0.2*table{i,4};
+                        table{i,3} = 1.8*table{i,4};
+                        j=j+1;
+                        if j > length(app.UITable.Data)
+                            j = length(app.UITable.Data);
+                        end
+                    end
+                    model_params = model_params + sprintf("%s=%s ",table{i,1},table{i,4});
+                end
+            else
+                %                 for i = 1:length(app.UITable.Data)
+                %                     model_params = model_params + sprintf("%s=%s ",app.UITable.Data{i,1},app.UITable.Data{i,4});
+                %                 end
+                for i = 1:length(params)
+                    model_params = model_params + sprintf("%s=%s ",app.initParam(i,1),string(params(i)));
+                end
+            end
+            ind_1 = 1;
+            ind_2 = 1;
+            %Transfer_param = string(zeros(1,length(app.data(n).Meas(i).Values(j).Param)))
+            for i = 1:length(app.data(n).Meas)
+                for j = 1:length(app.data(n).Meas(i).Values)
+                    if i == 1
+                        Transfer_param(ind_1) = app.data(n).Meas(i).Values(j).Param;
+                        ind_1 = ind_1 + 1;
+                        %ind_vgs = i;
+                    end
+                    if i == 2
+                        Output_param(ind_2) = app.data(n).Meas(i).Values(j).Param;
+                        ind_2 = ind_2 + 1;
+                        %ind_vds = i;
+                    end
+                end
+            end
+            vds_values = sprintf("%g ",Transfer_param);
+            vgs_values = sprintf("%g ",Output_param);
+
+
+            %start_stop_step_vgs = sprintf("%g ",min(app.data(ind_vgs).XY(:,1)),max(app.data(ind_vgs).XY(:,1)),abs(app.data(ind_vgs).XY(2,1)-app.data(ind_vgs).XY(1,1)));
+            %start_stop_step_vds = sprintf("%g ",min(app.data(ind_vds).XY(:,1)),max(app.data(ind_vds).XY(:,1)),abs(app.data(ind_vds).XY(2,1)-app.data(ind_vds).XY(1,1)));
+
+            start_stop_step_vgs = sprintf("%g ",app.data(n).Meas(1).vg_diap.Start,app.data(n).Meas(1).vg_diap.Stop,app.data(n).Meas(1).vg_diap.Step);
+            start_stop_step_vds = sprintf("%g ",app.data(n).Meas(2).vd_diap.Start,app.data(n).Meas(2).vd_diap.Stop,app.data(n).Meas(2).vd_diap.Step);
+
+            fid = fopen(netlist_idvg,'w+');
+            fprintf(fid,code_idvg,model_params,vds_values,start_stop_step_vgs);
+            fid = fclose(fid);
+            fid = fopen(netlist_idvd,'w+');
+            fprintf(fid,code_idvd,model_params,vgs_values,start_stop_step_vds);
+            fid = fclose(fid);
+
+            system('"' + spice_path + '"' + ' -b '+ '"' + netlist_idvg+ '"');
+            system('"' + spice_path + '"' + ' -b '+ '"' + netlist_idvd+ '"');
+
+            raw_data_idvg = LTspice2Matlab(project_path + "\BS170_idvg.raw");
+            raw_data_idvd = LTspice2Matlab(project_path + "\BS170_idvd.raw");
+
+            ind = 0;
+            C1 = raw_data_idvg.variable_mat;
+            for i = 1:length(raw_data_idvg.variable_name_list)
+                if startsWith(string(raw_data_idvg.variable_name_list(i)),"Id") == 1
+                    ind = i;
+                    break;
+                end
+            end
+            C1(3:ind-1,:,:)=[];
+            C1(ind+1:end,:,:)=[];
+            C1 = permute(C1,[2,1,3]); % транспонирует
+            % C1(:,3,:)=C1(:,3,:)*1000; % A -> mA
+
+            ind = 0;
+            C2 = raw_data_idvd.variable_mat;
+            for i = 1:length(raw_data_idvd.variable_name_list)
+                if startsWith(string(raw_data_idvd.variable_name_list(i)),"Id") == 1
+                    ind = i;
+                    break;
+                end
+            end
+            C2(3:ind-1,:,:)=[];
+            C2(ind+1:end,:,:)=[];
+            C2 = permute(C2,[2,1,3]);
+            %C2(:,3,:) = C2(:,3,:)*1000;
+
+            for i = 1:2%убирает лишнюю дробную часть(0.050001231 -> 0.05)
+                C1(:,i,:)=round(C1(:,i,:),4);
+                C2(:,i,:)=round(C2(:,i,:),4);
+            end
+
+
+            %Проверка на существование структуры spice
+             app.ind_spice==2 
+                app.data(app.ind_spice)=app.data(1);%дублирование 1 структуры в структуру spice
+                app.data(app.ind_spice).Number = app.ind_spice;%присваивание нужного индекса структуре spice в app.data
+                for j = 1:length(app.data(1).Meas) %для двух строк Meas
+                    for i= 1:length(app.data(1).Meas(j).Values) %для Values, для 6 или 5 строк
+                        for k =1:5
+                        %app.data(app.ind_spice).Meas(j).Values(i).XY(:,3)=[];%удаляем 2 столбец
+                        end
+                    end
+                end
+                 app.data(app.ind_spice).Number = 'Spice';
+            
+
+            check_array = zeros(1,length(C1(1,1,:)));
+            for i = 1:length(app.data(app.ind_spice).Meas(1).Values)
+                if prod(check_array > 0)
+                    break;
+                end 
+                
+                for j = 1:length(C1(1,1,:))
+                    if (C1(1,1,j)==app.data(app.ind_spice).Meas(1).Values(i).Param)
+                        app.data(app.ind_spice).Meas(1).Values(i).XY(:,2) = C1(:,3,j);%запись значений spice во 2 столбец spice-структуры (idvg)
+                        check_array(j)=1;
+                        break;
+                    end
+                end
+            end
+            check_array = zeros(1,length(C2(1,2,:)));
+            for i = 1:length(app.data(app.ind_spice).Meas(2).Values)
+                if prod(check_array > 0)
+                    break;
+                    
+                end
+                for j = 1:length(C2(1,2,:))
+                    if (C2(1,2,j)==app.data(app.ind_spice).Meas(2).Values(i).Param)
+                        app.data(app.ind_spice).Meas(2).Values(i).XY(:,2) = C2(:,3,j);%запись значений spice во 2 столбец spice-структуры (idvd)
+                        check_array(j)=1;
+                        break;
+                    end
+                end
+            end
+            %disp('Записались значения структуру, если она создалась')
+
+            %%%%%%ListBox
+            if app.exist_spice == 1
+                plot_ind_idvg = length(app.data);
+                plot_ind_idvd = length(app.data);
+                for n = app.ind_spice
+                    for i = 1:length(app.data(n).Meas)
+                        if i == 1
+                            app.exp_idvg(plot_ind_idvg) = plot(app.UIAxes_Transfer,app.data(n).Meas(i).Values(1).XY(:,1),app.data(n).Meas(i).Values(1).XY(:,2));
+                            hold(app.UIAxes_Transfer, 'on');
+                            app.Transfer_Str.Items = [app.Transfer_Str.Items,  'Spice'];
+                            app.StrucParam(plot_ind_idvg) =  n;
+                            set(app.exp_idvg(plot_ind_idvg),'DisplayName',string(n));
+                            delete(app.exp_idvg(plot_ind_idvg)); 
+                            plot_ind_idvg = plot_ind_idvg + 1;
+                        end
+                        if i == 2
+                            app.exp_idvd(plot_ind_idvd) = plot(app.UIAxes_Output,app.data(n).Meas(i).Values(1).XY(:,1),app.data(n).Meas(i).Values(1).XY(:,2));
+                            hold(app.UIAxes_Output, 'on');
+                            app.Output_Str.Items = [app.Output_Str.Items,'Spice'];
+                            app.StrucParam_output(plot_ind_idvd) = n;
+                            set(app.exp_idvd(plot_ind_idvd),'DisplayName',string(n));
+                            delete(app.exp_idvd(plot_ind_idvd)); 
+                            plot_ind_idvd = plot_ind_idvd + 1;
+                        end
+                    end
+                end
+            end
+%%%%%%%
+
+
+
+           value_transfer = app.TransferBox.Value;
+            check_transfer = ismember(string(app.TransferParam),value_transfer);
+            value_output = app.OutputBox.Value;
+            check_output = ismember(string(app.OutputParam),value_output);
+            j_1 = 1;
+            j_2 = 1;
+            plot_ind_idvg = 1;
+            plot_ind_idvd = 1;
+            diff_idvg = 0;
+            diff_idvd = 0;
+            percent_idvg = 0;
+            percent_idvd = 0;
+            for i = 1:length(app.data(app.ind_spice).Meas)
+                for j = 1:length(app.data(app.ind_spice).Meas(i).Values)
+                    if (i == 1)
+                        if (check_transfer(j_1) == 1)    
+
+                            
+                            app.h_spice_idvg(plot_ind_idvg) = plot(app.UIAxes_Transfer,app.data(app.ind_spice).Meas(i).Values(j).XY(:,1),app.data(app.ind_spice).Meas(i).Values(j).XY(:,2));
+                            %app.h_spice_idvg(plot_ind_idvg).Color = app.h_idvg(plot_ind_idvg).Color;
+                            set(app.h_spice_idvg(plot_ind_idvg),{'DisplayName'},{string(app.data(app.ind_spice).Meas(i).Values(j).Param)});
+                            hold(app.UIAxes_Transfer, 'on');
+                            plot_ind_idvg = plot_ind_idvg + 1;
+
+
+                            diff_idvg = diff_idvg + sum((app.data(app.ind_avg).Meas(i).Values(j).XY(:,2)-app.data(app.ind_spice).Meas(i).Values(j).XY(:,2)));
+                            for k = 1:length(app.data(app.ind_spice).Meas(i).Values(j).XY)
+                                if app.data(app.ind_spice).Meas(i).Values(j).XY(k,2)>1e-6%%ВАЖНО
+                                    percent_idvg = percent_idvg + abs(app.data(app.ind_spice).Meas(i).Values(j).XY(k,2)-app.data(app.ind_avg).Meas(i).Values(j).XY(k,2))./app.data(app.ind_avg).Meas(i).Values(j).XY(k,2);
+                                end
+                            end
+
+                        end
+
+                        j_1 = j_1 + 1;
+                    end
+                    if (i == 2)
+                        if (check_output(j_2) == 1)
+
+                            app.h_spice_idvd(plot_ind_idvd) = plot(app.UIAxes_Output,app.data(app.ind_spice).Meas(i).Values(j).XY(:,1),app.data(app.ind_spice).Meas(i).Values(j).XY(:,2));
+                            set(app.h_spice_idvd(plot_ind_idvd),{'DisplayName'},{string(app.data(app.ind_spice).Meas(i).Values(j).Param)});
+                            hold(app.UIAxes_Output, 'on');
+                            plot_ind_idvd = plot_ind_idvd + 1;
+
+
+                            diff_idvd = diff_idvd + sum((app.data(app.ind_avg).Meas(i).Values(j).XY(:,2)-app.data(app.ind_spice).Meas(i).Values(j).XY(:,2)));
+                            percent_idvd = percent_idvd + sum(abs(app.data(app.ind_spice).Meas(i).Values(j).XY(:,2)-app.data(app.ind_avg).Meas(i).Values(j).XY(:,2))./app.data(app.ind_avg).Meas(i).Values(j).XY(:,2));
+                        end
+                        j_2 = j_2 + 1;
+                    end
+                end
+            end
+            err_idvg = 1./(length(app.data(app.ind_spice).Meas(1).Values(1).XY(:,1))*6)*sqrt(diff_idvg);%замена
+            err_idvd = 1./(length(app.data(app.ind_spice).Meas(2).Values(1).XY(:,1))*5)*sqrt(diff_idvd);
+            percent_idvg = 100./(length(app.data(app.ind_spice).Meas(1).Values(1).XY(:,1))*6) * percent_idvg;
+            percent_idvd = 100./(length(app.data(app.ind_spice).Meas(2).Values(1).XY(:,1))*5)* percent_idvd;
+            app.ErrValue_idvg.Text = [string(err_idvg),string(percent_idvg)+'%'];
+            app.ErrValue_idvd.Text = [string(err_idvd),string(percent_idvd)+'%'];
+
+            num_columns_idvg = [];
+            num_columns_idvd = [];
+            for i = 1:length(app.data(app.ind_spice).Meas(1).Values)
+                num_columns_idvg(i) = 2 + (i-1)*2;
+            end
+            for i = 1:length(app.data(app.ind_spice).Meas(2).Values)
+                num_columns_idvd(i) = 2 + (i-1)*2;
+            end
+            
+            app.a_data=app.data(app.ind_spice);
+            n_d=app.data(app.ind_spice).Meas(2).vd_diap.Num;
+            n_g=app.data(app.ind_spice).Meas(1).vg_diap.Num;
+            if n_d>n_g
+                for i=1:app.a_data.Meas(1).vd_diap.Num
+                    app.a_data.Meas(1).Values(i).XY([n_g+1:n_d],:)=0;
+                end
+               
+            elseif n_d<n_g
+                for i=1:app.a_data.Meas(2).vg_diap.Num
+                    app.a_data.Meas(2).Values(i).XY([n_d+1:n_g],:)=0;
+                end
+            end
+        
+            jj=1;
+            for i=1:length(app.a_data.Meas(1).Values)
+                g(:,jj)=app.a_data.Meas(1).Values(i).XY(:,2);
+                jj=jj+1;
+            end
+            for i=1:length(app.a_data.Meas(2).Values)
+                g(:,jj)=app.a_data.Meas(2).Values(i).XY(:,2);
+                jj=jj+1;
+            end
+
+
+
+            %disp(1);
+            %ans_idvg = [app.data(app.ind_spice).Meas(1).Values(:).XY];
+            %ans_idvd = [app.data(app.ind_spice).Meas(2).Values(:).XY];
+            
+
+            %g = ans_idvg(ismember(app.data(app.ind_spice).Meas(1).Values(1).XY(:,1),xdata),num_columns_idvg);
+            %if size(xdata) ~= size(app.data(1).Meas(1).Values(1).XY(:,1))
+            %    g(1:length(xdata),width(g)+1:width(g)+width(num_columns_idvd))=ans_idvd(ismember(app.data(app.ind_spice).Meas(2).Values(1).XY(:,1),xdata),num_columns_idvd);
+        
+            %else
+            %    g(1:length(ans_idvd),width(g)+1:width(g)+width(num_columns_idvd))=ans_idvd(ismember(app.data(app.ind_spice).Meas(2).Values(1).XY(:,1),xdata),num_columns_idvd);
+            %end
+            %disp(g)
+        end
+
+
+
+        function g = spice_model_(app,params,xdata)
+            if (isempty(app.h_spice_idvg)==0)
+                delete(app.h_spice_idvg);
+            end
+            app.h_spice_idvg = [];
+
+            if (isempty(app.h_spice_idvd)==0)
+                delete(app.h_spice_idvd);
+            end
+            app.h_spice_idvd = [];
+
+
+            %n = length(app.data); %МЕНЯЛИ 24.03
+            n=1;
+
+            app.exist_spice = app.exist_spice+1;
+            
+            project_path = string(app.project_name);
+            netlist_idvg = project_path+"\BS170_idvg.cir";
+            netlist_idvd = project_path+"\BS170_idvd.cir";
+            spice_path = string(app.spice_file_name);
+
+            %app.initParam(:,4) = cellstr(string(params));
+             app.UITable.Data(:,4) = cellstr(string(params));
+             code_idvg = ["\r\n"+... 
+                "M1 Vd Vg 0 0 BS170\r\n"+...
+                "V1 Vg 0 0\r\n"+...
+                "V2 Vd 0 {X}\r\n"+...
+                ".model BS170 NMOS(level=3 %s)\r\n"+...
+                ".step param X LIST %s\r\n"+...
+                ".dc V1 %s\r\n"+...
+                ".backanno\r\n"+...
+                ".end\r\n"];
+            code_idvd = ["\r\n"+...
+                "M1 Vd Vg 0 0 BS170\r\n"+...
+                "V1 Vg 0 {X}\r\n"+...
+                "V2 Vd 0 0\r\n"+...
+                ".model BS170 NMOS(level=3 %s)\r\n"+...
+                ".step param X LIST %s\r\n"+...
+                ".dc V2 %s\r\n"+...
+                ".backanno\r\n"+...
+                ".end\r\n"];
+
+
+            %model_params = sprintf("W=%g L=%g VTO=%g Uo=%g RS=%g tox=%g theta=%g", app.W, app.L, app.VTO, app.U0, app.RS, app.TOX, app.theta);%kp - не выведен в приложении
+
+            model_params = "";
+            if (exist(string(app.project_name) + '\' +"ParamTable.xls",'file')~=0)                                                             %&&false%%ДОБАВИЛ FALSE ВРЕМЕННО
+                table = readtable(string(app.project_name) + '\' +"ParamTable.xls");
+                table = table2cell(table);%преобразуем в массив ячеек
+                if ~isempty(app.Table_changelist)
+                    changeSize = size(app.Table_changelist);
+                    for i = 1:changeSize(1)
+%                         for j = 1:height(table)
+%                             if string(table{j,1}) == string(app.initParam(app.Table_changelist(i,1),1))
+%                                 table{j,app.Table_changelist(i,2)} = app.initParam(app.Table_changelist(i,1),app.Table_changelist(i,2));
+%                                 break;
+%                             end
+%                         end
+
+                        for j = 1:height(table)
+                            if string(table{j,1}) == string(app.UITable.Data{app.Table_changelist(i,1),1})
+                                table{j,app.Table_changelist(i,2)} = app.UITable.Data{app.Table_changelist(i,1),app.Table_changelist(i,2)};
+                                break;
+                            end
+                        end
+                    end
+                    app.Table_changelist = [];
+                end
+                j = 1;
+                for i = 1:height(table)
+%                     if string(table{i,1})==string(app.initParam(j,1))
+%                         table{i,4} = app.initParam(j,4);
+%                         table{i,2} = 0.2*table{i,4};
+%                         table{i,3} = 1.8*table{i,4};
+%                         j=j+1;
+%                         if j > length(app.initParam)
+%                             j = length(app.initParam);
+%                         end
+%                     end
+
+                        if string(table{i,1})==string(app.UITable.Data{j,1})
+                        table{i,4} = app.UITable.Data{j,4};
+                        table{i,2} = 0.2*table{i,4};
+                        table{i,3} = 1.8*table{i,4};
+                        j=j+1;
+                        if j > length(app.UITable.Data)
+                            j = length(app.UITable.Data);
+                        end
+                    end
+                    model_params = model_params + sprintf("%s=%s ",table{i,1},table{i,4});
+                end
+            else
+                %                 for i = 1:length(app.UITable.Data)
+                %                     model_params = model_params + sprintf("%s=%s ",app.UITable.Data{i,1},app.UITable.Data{i,4});
+                %                 end
+                for i = 1:length(params)
+                    model_params = model_params + sprintf("%s=%s ",app.initParam(i,1),string(params(i)));
+                end
+            end
+            ind_1 = 1;
+            ind_2 = 1;
+            %Transfer_param = string(zeros(1,length(app.data(n).Meas(i).Values(j).Param)))
+            for i = 1:length(app.data(n).Meas)
+                for j = 1:length(app.data(n).Meas(i).Values)
+                    if i == 1
+                        Transfer_param(ind_1) = app.data(n).Meas(i).Values(j).Param;
+                        ind_1 = ind_1 + 1;
+                        %ind_vgs = i;
+                    end
+                    if i == 2
+                        Output_param(ind_2) = app.data(n).Meas(i).Values(j).Param;
+                        ind_2 = ind_2 + 1;
+                        %ind_vds = i;
+                    end
+                end
+            end
+            vds_values = sprintf("%g ",Transfer_param);
+            vgs_values = sprintf("%g ",Output_param);
+
+
+            %start_stop_step_vgs = sprintf("%g ",min(app.data(ind_vgs).XY(:,1)),max(app.data(ind_vgs).XY(:,1)),abs(app.data(ind_vgs).XY(2,1)-app.data(ind_vgs).XY(1,1)));
+            %start_stop_step_vds = sprintf("%g ",min(app.data(ind_vds).XY(:,1)),max(app.data(ind_vds).XY(:,1)),abs(app.data(ind_vds).XY(2,1)-app.data(ind_vds).XY(1,1)));
+
+            start_stop_step_vgs = sprintf("%g ",app.data(n).Meas(1).vg_diap.Start,app.data(n).Meas(1).vg_diap.Stop,app.data(n).Meas(1).vg_diap.Step);
+            start_stop_step_vds = sprintf("%g ",app.data(n).Meas(2).vd_diap.Start,app.data(n).Meas(2).vd_diap.Stop,app.data(n).Meas(2).vd_diap.Step);
+
+            fid = fopen(netlist_idvg,'w+');
+            fprintf(fid,code_idvg,model_params,vds_values,start_stop_step_vgs);
+            fid = fclose(fid);
+            fid = fopen(netlist_idvd,'w+');
+            fprintf(fid,code_idvd,model_params,vgs_values,start_stop_step_vds);
+            fid = fclose(fid);
+
+            system('"' + spice_path + '"' + ' -b '+ '"' + netlist_idvg+ '"');
+            system('"' + spice_path + '"' + ' -b '+ '"' + netlist_idvd+ '"');
+
+            raw_data_idvg = LTspice2Matlab(project_path + "\BS170_idvg.raw");
+            raw_data_idvd = LTspice2Matlab(project_path + "\BS170_idvd.raw");
+
+            ind = 0;
+            C1 = raw_data_idvg.variable_mat;
+            for i = 1:length(raw_data_idvg.variable_name_list)
+                if startsWith(string(raw_data_idvg.variable_name_list(i)),"Id") == 1
+                    ind = i;
+                    break;
+                end
+            end
+            C1(3:ind-1,:,:)=[];
+            C1(ind+1:end,:,:)=[];
+            C1 = permute(C1,[2,1,3]); % транспонирует
+            % C1(:,3,:)=C1(:,3,:)*1000; % A -> mA
+
+            ind = 0;
+            C2 = raw_data_idvd.variable_mat;
+            for i = 1:length(raw_data_idvd.variable_name_list)
+                if startsWith(string(raw_data_idvd.variable_name_list(i)),"Id") == 1
+                    ind = i;
+                    break;
+                end
+            end
+            C2(3:ind-1,:,:)=[];
+            C2(ind+1:end,:,:)=[];
+            C2 = permute(C2,[2,1,3]);
+            %C2(:,3,:) = C2(:,3,:)*1000;
+
+            for i = 1:2%убирает лишнюю дробную часть(0.050001231 -> 0.05)
+                C1(:,i,:)=round(C1(:,i,:),4);
+                C2(:,i,:)=round(C2(:,i,:),4);
+            end
+
+
+            %Проверка на существование структуры spice
+             app.ind_spice==2 
+                app.data(app.ind_spice)=app.data(1);%дублирование 1 структуры в структуру spice
+                app.data(app.ind_spice).Number = app.ind_spice;%присваивание нужного индекса структуре spice в app.data
+                for j = 1:length(app.data(1).Meas) %для двух строк Meas
+                    for i= 1:length(app.data(1).Meas(j).Values) %для Values, для 6 или 5 строк
+                        for k =1:5
+                        %app.data(app.ind_spice).Meas(j).Values(i).XY(:,3)=[];%удаляем 2 столбец
+                        end
+                    end
+                end
+                 app.data(app.ind_spice).Number = 'Spice';
+            
+
+            check_array = zeros(1,length(C1(1,1,:)));
+            for i = 1:length(app.data(app.ind_spice).Meas(1).Values)
+                if prod(check_array > 0)
+                    break;
+                end 
+                
+                for j = 1:length(C1(1,1,:))
+                    if (C1(1,1,j)==app.data(app.ind_spice).Meas(1).Values(i).Param)
+                        app.data(app.ind_spice).Meas(1).Values(i).XY(:,2) = C1(:,3,j);%запись значений spice во 2 столбец spice-структуры (idvg)
+                        check_array(j)=1;
+                        break;
+                    end
+                end
+            end
+            check_array = zeros(1,length(C2(1,2,:)));
+            for i = 1:length(app.data(app.ind_spice).Meas(2).Values)
+                if prod(check_array > 0)
+                    break;
+                    
+                end
+                for j = 1:length(C2(1,2,:))
+                    if (C2(1,2,j)==app.data(app.ind_spice).Meas(2).Values(i).Param)
+                        app.data(app.ind_spice).Meas(2).Values(i).XY(:,2) = C2(:,3,j);%запись значений spice во 2 столбец spice-структуры (idvd)
+                        check_array(j)=1;
+                        break;
+                    end
+                end
+            end
+            %disp('Записались значения структуру, если она создалась')
+
+            %%%%%%ListBox
+            if app.exist_spice == 1
+                plot_ind_idvg = length(app.data);
+                plot_ind_idvd = length(app.data);
+                for n = app.ind_spice
+                    for i = 1:length(app.data(n).Meas)
+                        if i == 1
+                            app.exp_idvg(plot_ind_idvg) = plot(app.UIAxes_Transfer,app.data(n).Meas(i).Values(1).XY(:,1),app.data(n).Meas(i).Values(1).XY(:,2));
+                            hold(app.UIAxes_Transfer, 'on');
+                            app.Transfer_Str.Items = [app.Transfer_Str.Items,  'Spice'];
+                            app.StrucParam(plot_ind_idvg) =  n;
+                            set(app.exp_idvg(plot_ind_idvg),'DisplayName',string(n));
+                            delete(app.exp_idvg(plot_ind_idvg)); 
+                            plot_ind_idvg = plot_ind_idvg + 1;
+                        end
+                        if i == 2
+                            app.exp_idvd(plot_ind_idvd) = plot(app.UIAxes_Output,app.data(n).Meas(i).Values(1).XY(:,1),app.data(n).Meas(i).Values(1).XY(:,2));
+                            hold(app.UIAxes_Output, 'on');
+                            app.Output_Str.Items = [app.Output_Str.Items,'Spice'];
+                            app.StrucParam_output(plot_ind_idvd) = n;
+                            set(app.exp_idvd(plot_ind_idvd),'DisplayName',string(n));
+                            delete(app.exp_idvd(plot_ind_idvd)); 
+                            plot_ind_idvd = plot_ind_idvd + 1;
+                        end
+                    end
+                end
+            end
+%%%%%%%
+
+
+
+           value_transfer = app.TransferBox.Value;
+            check_transfer = ismember(string(app.TransferParam),value_transfer);
+            value_output = app.OutputBox.Value;
+            check_output = ismember(string(app.OutputParam),value_output);
+            j_1 = 1;
+            j_2 = 1;
+            plot_ind_idvg = 1;
+            plot_ind_idvd = 1;
+            diff_idvg = 0;
+            diff_idvd = 0;
+            percent_idvg = 0;
+            percent_idvd = 0;
+            for i = 1:length(app.data(app.ind_spice).Meas)
+                for j = 1:length(app.data(app.ind_spice).Meas(i).Values)
+                    if (i == 1)
+                        if (check_transfer(j_1) == 1)    
+
+                            
+                            app.h_spice_idvg(plot_ind_idvg) = plot(app.UIAxes_Transfer,app.data(app.ind_spice).Meas(i).Values(j).XY(:,1),app.data(app.ind_spice).Meas(i).Values(j).XY(:,2));
+                            %app.h_spice_idvg(plot_ind_idvg).Color = app.h_idvg(plot_ind_idvg).Color;
+                            set(app.h_spice_idvg(plot_ind_idvg),{'DisplayName'},{string(app.data(app.ind_spice).Meas(i).Values(j).Param)});
+                            hold(app.UIAxes_Transfer, 'on');
+                            plot_ind_idvg = plot_ind_idvg + 1;
+
+
+                            diff_idvg = diff_idvg + sum((app.data(app.ind_avg).Meas(i).Values(j).XY(:,2)-app.data(app.ind_spice).Meas(i).Values(j).XY(:,2)));
+                            for k = 1:length(app.data(app.ind_spice).Meas(i).Values(j).XY)
+                                if app.data(app.ind_spice).Meas(i).Values(j).XY(k,2)>1e-6%%ВАЖНО
+                                    percent_idvg = percent_idvg + abs(app.data(app.ind_spice).Meas(i).Values(j).XY(k,2)-app.data(app.ind_avg).Meas(i).Values(j).XY(k,2))./app.data(app.ind_avg).Meas(i).Values(j).XY(k,2);
+                                end
+                            end
+
+                        end
+
+                        j_1 = j_1 + 1;
+                    end
+                    if (i == 2)
+                        if (check_output(j_2) == 1)
+
+                            app.h_spice_idvd(plot_ind_idvd) = plot(app.UIAxes_Output,app.data(app.ind_spice).Meas(i).Values(j).XY(:,1),app.data(app.ind_spice).Meas(i).Values(j).XY(:,2));
+                            set(app.h_spice_idvd(plot_ind_idvd),{'DisplayName'},{string(app.data(app.ind_spice).Meas(i).Values(j).Param)});
+                            hold(app.UIAxes_Output, 'on');
+                            plot_ind_idvd = plot_ind_idvd + 1;
+
+
+                            diff_idvd = diff_idvd + sum((app.data(app.ind_avg).Meas(i).Values(j).XY(:,2)-app.data(app.ind_spice).Meas(i).Values(j).XY(:,2)));
+                            percent_idvd = percent_idvd + sum(abs(app.data(app.ind_spice).Meas(i).Values(j).XY(:,2)-app.data(app.ind_avg).Meas(i).Values(j).XY(:,2))./app.data(app.ind_avg).Meas(i).Values(j).XY(:,2));
+                        end
+                        j_2 = j_2 + 1;
+                    end
+                end
+            end
+            err_idvg = 1./(length(app.data(app.ind_spice).Meas(1).Values(1).XY(:,1))*6)*sqrt(diff_idvg);%замена
+            err_idvd = 1./(length(app.data(app.ind_spice).Meas(2).Values(1).XY(:,1))*5)*sqrt(diff_idvd);
+            percent_idvg = 100./(length(app.data(app.ind_spice).Meas(1).Values(1).XY(:,1))*6) * percent_idvg;
+            percent_idvd = 100./(length(app.data(app.ind_spice).Meas(2).Values(1).XY(:,1))*5)* percent_idvd;
+            app.ErrValue_idvg.Text = [string(err_idvg),string(percent_idvg)+'%'];
+            app.ErrValue_idvd.Text = [string(err_idvd),string(percent_idvd)+'%'];
+
+            num_columns_idvg = [];
+            num_columns_idvd = [];
+            for i = 1:length(app.data(app.ind_spice).Meas(1).Values)
+                num_columns_idvg(i) = 2 + (i-1)*2;
+            end
+            for i = 1:length(app.data(app.ind_spice).Meas(2).Values)
+                num_columns_idvd(i) = 2 + (i-1)*2;
+            end
+            
+            app.a_data=app.data(app.ind_spice);
+            n_d=app.data(app.ind_spice).Meas(2).vd_diap.Num;
+            n_g=app.data(app.ind_spice).Meas(1).vg_diap.Num;
+            if n_d>n_g
+                for i=1:app.a_data.Meas(1).vd_diap.Num
+                    app.a_data.Meas(1).Values(i).XY([n_g+1:n_d],:)=0;
+                end
+               
+            elseif n_d<n_g
+                for i=1:app.a_data.Meas(2).vg_diap.Num
+                    app.a_data.Meas(2).Values(i).XY([n_d+1:n_g],:)=0;
+                end
+            end
+            g=[];
+            jj=1;
+            for i=1:length(app.a_data.Meas(1).Values)
+                g(:,jj)=app.a_data.Meas(1).Values(i).XY(:,2);
+                jj=jj+1;
+            end
+            for i=1:length(app.a_data.Meas(2).Values)
+                g(:,jj)=app.a_data.Meas(2).Values(i).XY(:,2);
+                jj=jj+1;
+            end
+
+            g=g(:,1);
+            
+            %disp(1);
+            %ans_idvg = [app.data(app.ind_spice).Meas(1).Values(:).XY];
+            %ans_idvd = [app.data(app.ind_spice).Meas(2).Values(:).XY];
+            
+
+            %g = ans_idvg(ismember(app.data(app.ind_spice).Meas(1).Values(1).XY(:,1),xdata),num_columns_idvg);
+            %if size(xdata) ~= size(app.data(1).Meas(1).Values(1).XY(:,1))
+            %    g(1:length(xdata),width(g)+1:width(g)+width(num_columns_idvd))=ans_idvd(ismember(app.data(app.ind_spice).Meas(2).Values(1).XY(:,1),xdata),num_columns_idvd);
+        
+            %else
+            %    g(1:length(ans_idvd),width(g)+1:width(g)+width(num_columns_idvd))=ans_idvd(ismember(app.data(app.ind_spice).Meas(2).Values(1).XY(:,1),xdata),num_columns_idvd);
+            %end
+            %disp(g)
+        end
+
+
+
+
+
+
+
+
+
+        function Paint1(app,y)
+            app.h_exp_idvg = [];
+            app.h_spice_idvg = [];
+            colrs = {'r.','m.', 'c.', 'g.', 'y.', 'b.', 'k.'};
+            value7=string(app.value6_);
+            if app.TRANSFER_flag == 1
+                l = length(app.data);
+
+                for n = 1:l
+                    plot_ind = 1;
+                    pop=num2str(n);
+                    inde = find(value7==pop);
+                    if ~isempty(inde)
+
+                        j = 1;
+                        for i = 1:length(app.data(n).Meas(1).Values)
+                            if (y(j) == 1)
+                                app.h_exp_idvg(plot_ind) = plot(app.UIAxes_Transfer,app.data(n).Meas(1).Values(i).XY(:,1),app.data(n).Meas(1).Values(i).XY(:,2),colrs{n});
+                                if n==1
+                                    set(app.h_exp_idvg(plot_ind), {'DisplayName'},{'Среднее'});
+                                elseif n==2
+                                    set(app.h_exp_idvg(plot_ind), {'DisplayName'},{'Spice'});
+                                else
+                                    set(app.h_exp_idvg(plot_ind), {'DisplayName'},{string(n-2)});
+                                end
+                                legend(app.UIAxes_Transfer, 'show')
+                                hold(app.UIAxes_Transfer, 'on');
+                                plot_ind = plot_ind + 1;
+                            end
+                            j = j + 1;
+                        end
+                    end
+                end
+            end
+        end
+
+
+        function Paint1_out(app,y)
+            app.h_exp_idvd = [];
+            app.h_spice_idvd = [];
+            colrs = {'r.','m.', 'c.', 'g.', 'y.', 'b.', 'k.'};
+            value7=string(app.value3_);
+            if app.OUT_flag == 1
+                l = length(app.data);
+
+                for n = 1:l
+                    plot_ind = 1;
+                    pop=num2str(n);
+                    inde = find(value7==pop);
+                    if ~isempty(inde)
+
+                        j = 1;
+                        for i = 1:length(app.data(n).Meas(2).Values)
+                            if (y(j) == 1)
+                                app.h_exp_idvd(plot_ind) = plot(app.UIAxes_Output,app.data(n).Meas(2).Values(i).XY(:,1),app.data(n).Meas(2).Values(i).XY(:,2),colrs{n});
+                                if n==1
+                                    set(app.h_exp_idvd(plot_ind), {'DisplayName'},{'Среднее'});
+                                elseif n==2
+                                    set(app.h_exp_idvd(plot_ind), {'DisplayName'},{'Spice'});
+                                else
+                                    set(app.h_exp_idvd(plot_ind), {'DisplayName'},{string(n-2)});
+                                end
+                                
+                                legend(app.UIAxes_Output, 'show')
+                                hold(app.UIAxes_Output, 'on');
+                                plot_ind = plot_ind + 1;
+                            end
+                            j = j + 1;
+                        end
+                    end
+                end
+            end
+        end
+
+                
+    end
+    
+        
+    methods (Access = public)
+
+        function AVG1(app)
+            value5 = app.Transfer_Str.Value;
+            value6=[];
+            iter=1;
+            for k1=1:length(value5)
+
+                qwe=string(value5{k1});
+                qwe1=qwe{1,1};
+                ll=length(qwe1);
+                if ll>2 & strcmp(qwe1,'Среднее')==0 & strcmp(qwe1,'Spice')==0
+                    ps=findstr(qwe1,')');
+                    prom_zna=qwe1(1:ps(1)-1);
+                    prom_zna=str2double(prom_zna);
+                    prom_zna=prom_zna+2;
+                    prom_zna=num2str(prom_zna);
+                    value6(iter)=string(prom_zna);
+                    iter=iter+1;
+
+                end
+            end
+
+
+            value7=string(value6);
+
+            %n - количество структур (без ср и spice)
+            n=length(app.data)-2;
+    
+            %копируем третью структуру в среднее
+            %clear app.data(app.ind_avg)
+
+            Data_split1(app,app.idvgSpinner.Value,app.idvdSpinner.Value,str2num(value7(1)));
+            app.data(app.ind_avg)=app.a_data; %МЕНЯЛИ 04.03
+            app.data(app.ind_avg).Number = 'Среднее';
+
+            %обнуляем третьи столбцы с NaN
+            for j = 1:length(app.data(1).Meas) %для двух строк Meas
+                for i= 1:length(app.data(1).Meas(j).Values) %для Values,
+                    app.data(app.ind_avg).Meas(j).Values(i).XY(:,3) = 0;%присваиваем 3 столбцу пустые значения
+                    app.data(app.ind_avg).Meas(j).Values(i).XY(:,2) = 0;
+                end
+            end
+
+            for k = 3:n+2 %для всех app.data
+
+                pop=num2str(k);
+                inde = find(value7==pop);
+                if ~isempty(inde)
+                    %disp("Зашло");
+
+                    Data_split1(app,app.idvgSpinner.Value,app.idvdSpinner.Value,k);
+
+                    if app.data(app.ind_avg).Meas(2).vg_diap.Num ~= app.a_data.Meas(2).vg_diap.Num | app.data(app.ind_avg).Meas(1).vd_diap.Num ~= app.a_data.Meas(1).vd_diap.Num
+                        f = warndlg('Неверно выбраны графики: несовпадает количество точек');
+                        clear app.data(app.ind_avg)
+                        app.exist_avg=0;
+                        return
+                    end
+
+                    if app.data(app.ind_avg).Meas(1).vg_diap.Start ~= app.a_data.Meas(1).vg_diap.Start | app.data(app.ind_avg).Meas(2).vg_diap.Start ~= app.a_data.Meas(2).vg_diap.Start | app.data(app.ind_avg).Meas(1).vd_diap.Start ~= app.a_data.Meas(1).vd_diap.Start | app.data(app.ind_avg).Meas(2).vd_diap.Start ~= app.a_data.Meas(2).vd_diap.Start
+                        f = warndlg('Неверно выбраны графики');
+                        clear app.data(app.ind_avg)
+                        app.exist_avg=0;
+                        return
+                    end
+
+                    if app.data(app.ind_avg).Meas(1).vg_diap.Stop ~= app.a_data.Meas(1).vg_diap.Stop | app.data(app.ind_avg).Meas(2).vg_diap.Stop ~= app.a_data.Meas(2).vg_diap.Stop | app.data(app.ind_avg).Meas(1).vd_diap.Stop ~= app.a_data.Meas(1).vd_diap.Stop | app.data(app.ind_avg).Meas(2).vd_diap.Stop ~= app.a_data.Meas(2).vd_diap.Stop
+                        f = warndlg('Неверно выбраны графики');
+                        clear app.data(app.ind_avg)
+                        app.exist_avg=0;
+                        return
+                    end
+
+                    for j = 1:length(app.data(app.ind_avg).Meas) %для двух строк Meas
+                        for i = 1:length(app.data(app.ind_avg).Meas(j).Values) %для Values,
+                            %disp("Сложило среднее")
+                            app.data(app.ind_avg).Meas(j).Values(i).XY(:,2) = app.data(app.ind_avg).Meas(j).Values(i).XY(:,2) + app.a_data.Meas(j).Values(i).XY(:,2);%сумма values из разных app.data
+
+                        end
+                    end
+
+                end
+            end
+
+            for j = 1:length(app.data(app.ind_avg).Meas)
+                for i = 1:length(app.data(app.ind_avg).Meas(j).Values)
+                    app.data(app.ind_avg).Meas(j).Values(i).XY(:,2) = (app.data(app.ind_avg).Meas(j).Values(i).XY(:,2))/(length(value6));
+                end
+            end
+            
+
+            % Заполняем ListBox
+            if app.exist_avg ==1
+                plot_ind_idvg = (length(app.data)-1);
+                plot_ind_idvd = (length(app.data)-1);
+                for n = app.ind_avg
+                    for i = 1:length(app.data(n).Meas)
+                        if i == 1
+                            app.exp_idvg(plot_ind_idvg) = plot(app.UIAxes_Transfer,app.data(n).Meas(i).Values(1).XY(:,1),app.data(n).Meas(i).Values(1).XY(:,2),'.');
+                            hold(app.UIAxes_Transfer, 'on');
+                            app.Transfer_Str.Items = [app.Transfer_Str.Items, 'Среднее'];
+                            app.StrucParam(plot_ind_idvg) = n;
+                            set(app.exp_idvg(plot_ind_idvg),'DisplayName',string(n));
+                            plot_ind_idvg = plot_ind_idvg + 1;
+                        end
+                        if i == 2
+                            app.exp_idvd(plot_ind_idvd) = plot(app.UIAxes_Output,app.data(n).Meas(i).Values(1).XY(:,1),app.data(n).Meas(i).Values(1).XY(:,2),'.');
+                            hold(app.UIAxes_Output, 'on');
+                            app.Output_Str.Items = [app.Output_Str.Items,'Среднее'];
+                            app.StrucParam_output(plot_ind_idvd) = n;
+                            set(app.exp_idvd(plot_ind_idvd),'DisplayName',string(n));
+                            plot_ind_idvd = plot_ind_idvd + 1;
+                        end
+                        app.data(n).Meas(i).Values(1).XY(:,3)=missing;
+                    end
+                    cla(app.UIAxes_Transfer);
+                    cla(app.UIAxes_Output);
+                end
+            end
+            cla(app.UIAxes_Transfer);
+            cla(app.UIAxes_Output);
+            Paint1(app,app.check);
+            Paint1_out(app,app.check_2);
+        end
+        
+
+        function Data_split1(app,n_g,n_d,num_str)
+            clear a_data;
+
+            max_idvd=app.data(num_str).Meas(2).vd_diap.Stop;
+            min_idvd=app.data(num_str).Meas(2).vd_diap.Start;
+            max_idvg=app.data(num_str).Meas(1).vg_diap.Stop;
+            min_idvg=app.data(num_str).Meas(1).vg_diap.Start;
+
+
+            n_idvd=round((max_idvd-min_idvd)/n_d);
+            n_idvg=round((max_idvg-min_idvg)/n_g);
+           
+            
+            sd_idvd=(max_idvd-min_idvd)/n_idvd;
+            xq_idvd=min_idvd:sd_idvd:max_idvd;
+
+
+            sd_idvg=(max_idvg-min_idvg)/n_idvg;
+            xq_idvg = min_idvg:sd_idvg:max_idvg;
+
+
+            app.idvgSpinner.Value=sd_idvg;
+            app.idvdSpinner.Value=sd_idvd;
+
+
+            app.a_data=app.data(num_str);
+            app.a_data.Meas(1).Values(1).XY=[];
+            app.a_data.Meas(2).Values(1).XY=[];
+
+            for i1=1:length(app.data(num_str).Meas(1).Values)
+                app.a_data.Meas(1).Values(i1).XY=[];
+                vq1_idvg = interp1(app.data(num_str).Meas(1).Values(i1).XY(:,1),app.data(num_str).Meas(1).Values(i1).XY(:,2),xq_idvg,'spline');
+                app.a_data.Meas(1).Values(i1).XY(:,1)=xq_idvg.';
+                app.a_data.Meas(1).Values(i1).XY(:,2)=vq1_idvg.';
+            end
+
+            for i2=1:length(app.data(num_str).Meas(2).Values)
+                vq1_idvd = interp1(app.data(num_str).Meas(2).Values(i2).XY(:,1),app.data(num_str).Meas(2).Values(i2).XY(:,2),xq_idvd,'spline');
+                app.a_data.Meas(2).Values(i2).XY=[];
+                app.a_data.Meas(2).Values(i2).XY(:,1)=xq_idvd.';
+                app.a_data.Meas(2).Values(i2).XY(:,2)=vq1_idvd.';
+            end
+            
+            app.a_data.Meas(1).vg_diap.Step=sd_idvg;
+            app.a_data.Meas(1).vg_diap.Num=n_idvg+1;
+
+            app.a_data.Meas(2).vd_diap.Step=sd_idvd;
+            app.a_data.Meas(2).vd_diap.Num=n_idvd+1;
+
+            app.idvgEditField.Value=n_idvg+1;
+            app.idvdEditField.Value=n_idvd+1;
+        end
+
+
+        function AVG(app)
+            value5 = app.Transfer_Str.Value;
+            value6=[];
+            iter=1;
+            for k1=1:length(value5)
+
+                qwe=string(value5{k1});
+                qwe1=qwe{1,1};
+                ll=length(qwe1);
+                if ll>2 & strcmp(qwe1,'Среднее')==0 & strcmp(qwe1,'Spice')==0
+                    ps=findstr(qwe1,')');
+                    prom_zna=qwe1(1:ps(1)-1);
+                    prom_zna=str2double(prom_zna);
+                    prom_zna=prom_zna+2;
+                    prom_zna=num2str(prom_zna);
+                    value6(iter)=string(prom_zna);
+                    iter=iter+1;
+
+                end
+            end
+
+
+            value7=string(value6);
+
+            %n - количество структур (без ср и spice)
+            n=length(app.data)-2;
+    
+            %копируем третью структуру в среднее
+            %clear app.data(app.ind_avg)
+
+            Data_split(app,app.idvgEditField.Value,app.idvdEditField.Value,str2num(value7(1)));
+            app.data(app.ind_avg)=app.a_data; %МЕНЯЛИ 04.03
+            app.data(app.ind_avg).Number = 'Среднее';
+
+            %обнуляем третьи столбцы с NaN
+            for j = 1:length(app.data(1).Meas) %для двух строк Meas
+                for i= 1:length(app.data(1).Meas(j).Values) %для Values,
+                    app.data(app.ind_avg).Meas(j).Values(i).XY(:,3) = 0;%присваиваем 3 столбцу пустые значения
+                    app.data(app.ind_avg).Meas(j).Values(i).XY(:,2) = 0;
+                end
+            end
+
+            for k = 3:n+2 %для всех app.data
+
+                pop=num2str(k);
+                inde = find(value7==pop);
+                if ~isempty(inde)
+                    %disp("Зашло");
+
+                    Data_split(app,app.idvgEditField.Value,app.idvdEditField.Value,k);
+
+                    if app.data(app.ind_avg).Meas(2).vg_diap.Num ~= app.a_data.Meas(2).vg_diap.Num | app.data(app.ind_avg).Meas(1).vd_diap.Num ~= app.a_data.Meas(1).vd_diap.Num
+                        f = warndlg('Неверно выбраны графики: несовпадает количество точек');
+                        clear app.data(app.ind_avg)
+                        app.exist_avg=0;
+                        return
+                    end
+
+                    if app.data(app.ind_avg).Meas(1).vg_diap.Start ~= app.a_data.Meas(1).vg_diap.Start | app.data(app.ind_avg).Meas(2).vg_diap.Start ~= app.a_data.Meas(2).vg_diap.Start | app.data(app.ind_avg).Meas(1).vd_diap.Start ~= app.a_data.Meas(1).vd_diap.Start | app.data(app.ind_avg).Meas(2).vd_diap.Start ~= app.a_data.Meas(2).vd_diap.Start
+                        f = warndlg('Неверно выбраны графики');
+                        clear app.data(app.ind_avg)
+                        app.exist_avg=0;
+                        return
+                    end
+
+                    if app.data(app.ind_avg).Meas(1).vg_diap.Stop ~= app.a_data.Meas(1).vg_diap.Stop | app.data(app.ind_avg).Meas(2).vg_diap.Stop ~= app.a_data.Meas(2).vg_diap.Stop | app.data(app.ind_avg).Meas(1).vd_diap.Stop ~= app.a_data.Meas(1).vd_diap.Stop | app.data(app.ind_avg).Meas(2).vd_diap.Stop ~= app.a_data.Meas(2).vd_diap.Stop
+                        f = warndlg('Неверно выбраны графики');
+                        clear app.data(app.ind_avg)
+                        app.exist_avg=0;
+                        return
+                    end
+
+                    for j = 1:length(app.data(app.ind_avg).Meas) %для двух строк Meas
+                        for i = 1:length(app.data(app.ind_avg).Meas(j).Values) %для Values,
+                            
+                            app.data(app.ind_avg).Meas(j).Values(i).XY(:,2) = app.data(app.ind_avg).Meas(j).Values(i).XY(:,2) + app.a_data.Meas(j).Values(i).XY(:,2);%сумма values из разных app.data
+
+                        end
+                    end
+
+                end
+            end
+
+            for j = 1:length(app.data(app.ind_avg).Meas)
+                for i = 1:length(app.data(app.ind_avg).Meas(j).Values)
+                    app.data(app.ind_avg).Meas(j).Values(i).XY(:,2) = (app.data(app.ind_avg).Meas(j).Values(i).XY(:,2))/(length(value6));
+                end
+            end
+            
+
+            % Заполняем ListBox
+            if app.exist_avg ==1
+                plot_ind_idvg = (length(app.data)-1);
+                plot_ind_idvd = (length(app.data)-1);
+                for n = app.ind_avg
+                    for i = 1:length(app.data(n).Meas)
+                        if i == 1
+                            app.exp_idvg(plot_ind_idvg) = plot(app.UIAxes_Transfer,app.data(n).Meas(i).Values(1).XY(:,1),app.data(n).Meas(i).Values(1).XY(:,2),'.');
+                            hold(app.UIAxes_Transfer, 'on');
+                            app.Transfer_Str.Items = [app.Transfer_Str.Items, 'Среднее'];
+                            app.StrucParam(plot_ind_idvg) = n;
+                            set(app.exp_idvg(plot_ind_idvg),'DisplayName',string(n));
+                            plot_ind_idvg = plot_ind_idvg + 1;
+                        end
+                        if i == 2
+                            app.exp_idvd(plot_ind_idvd) = plot(app.UIAxes_Output,app.data(n).Meas(i).Values(1).XY(:,1),app.data(n).Meas(i).Values(1).XY(:,2),'.');
+                            hold(app.UIAxes_Output, 'on');
+                            app.Output_Str.Items = [app.Output_Str.Items,'Среднее'];
+                            app.StrucParam_output(plot_ind_idvd) = n;
+                            set(app.exp_idvd(plot_ind_idvd),'DisplayName',string(n));
+                            plot_ind_idvd = plot_ind_idvd + 1;
+                        end
+                        app.data(n).Meas(i).Values(1).XY(:,3)=missing;
+                    end
+                    cla(app.UIAxes_Transfer);
+                    cla(app.UIAxes_Output);
+                end
+            end
+            cla(app.UIAxes_Transfer);
+            cla(app.UIAxes_Output);
+            Paint1(app,app.check);
+            Paint1_out(app,app.check_2);
+        end
+
+        function Data_split(app,n_g,n_d,num_str)
+            clear a_data;
+
+            %n_idvd=round(X);
+            n_idvd=n_d-1;
+            n_idvg=n_g-1;
+
+            max_idvd=app.data(num_str).Meas(2).vd_diap.Stop;
+            min_idvd=app.data(num_str).Meas(2).vd_diap.Start;
+            max_idvg=app.data(num_str).Meas(1).vg_diap.Stop;
+            min_idvg=app.data(num_str).Meas(1).vg_diap.Start;
+
+            %n_idvd=round((max_idvd-min_idvd)/n_d);
+            %n_idvg=round((max_idvg-min_idvg)/n_g);
+
+            sd_idvd=(max_idvd-min_idvd)/n_idvd;
+            xq_idvd=min_idvd:sd_idvd:max_idvd;
+
+
+            sd_idvg=(max_idvg-min_idvg)/n_idvg;
+            xq_idvg = min_idvg:sd_idvg:max_idvg;
+
+
+            app.idvgSpinner.Value=sd_idvg;
+            app.idvdSpinner.Value=sd_idvd;
+
+
+            app.a_data=app.data(num_str);
+            app.a_data.Meas(1).Values(1).XY=[];
+            app.a_data.Meas(2).Values(1).XY=[];
+
+            for i1=1:length(app.data(num_str).Meas(1).Values)
+                app.a_data.Meas(1).Values(i1).XY=[];
+                vq1_idvg = interp1(app.data(num_str).Meas(1).Values(i1).XY(:,1),app.data(num_str).Meas(1).Values(i1).XY(:,2),xq_idvg,'spline');
+                app.a_data.Meas(1).Values(i1).XY(:,1)=xq_idvg.';
+                app.a_data.Meas(1).Values(i1).XY(:,2)=vq1_idvg.';
+            end
+
+            for i2=1:length(app.data(num_str).Meas(2).Values)
+                vq1_idvd = interp1(app.data(num_str).Meas(2).Values(i2).XY(:,1),app.data(num_str).Meas(2).Values(i2).XY(:,2),xq_idvd,'spline');
+                app.a_data.Meas(2).Values(i2).XY=[];
+                app.a_data.Meas(2).Values(i2).XY(:,1)=xq_idvd.';
+                app.a_data.Meas(2).Values(i2).XY(:,2)=vq1_idvd.';
+            end
+            
+            app.a_data.Meas(1).vg_diap.Step=sd_idvg;
+            app.a_data.Meas(1).vg_diap.Num=n_idvg+1;
+
+            app.a_data.Meas(2).vd_diap.Step=sd_idvd;
+            app.a_data.Meas(2).vd_diap.Num=n_idvd+1;
+
+            app.idvgEditField.Value=n_idvg+1;
+            app.idvdEditField.Value=n_idvd+1;
+        end
+       
+        
+        function initialization(app,filename) %создание глобальной переменной, которая включает параметры
+            fid = fopen(filename,'rt');
+            app.spice_params = textscan(fid,'%s %s %s %s');
+            app.name_param = app.spice_params{1,1};%string
+            app.mmin = string(app.spice_params{1,2});
+            app.mmax = string(app.spice_params{1,3});
+            app.current = string(app.spice_params{1,4});
+            fclose(fid);
+        end
+        
+        function update_param(app, value_param_edit, ~, col_inbtable, row_inbtable) % изменение глобальной переменной
+            %при изменении параметров в большой таблице
+            if col_inbtable == 2
+                app.mmin(row_inbtable+1) = value_param_edit;
+                app.spice_params{1,2} = cellstr(app.mmin);
+            elseif col_inbtable == 3
+                app.mmax(row_inbtable+1) = cellstr(value_param_edit);
+                app.spice_params{1,3} = cellstr(app.mmax);
+            elseif col_inbtable == 4
+                app.current(row_inbtable+1) =cellstr(value_param_edit);
+                app.spice_params{1,4} = cellstr(app.current);
+            end
+        end
+      
+        function Build_graphs(app,per1,per2,per3,per4)
+            
+            cla(app.UIAxes_Transfer);
+            cla(app.UIAxes_Output);
+
+            app.Label.Text=per1;
+
+            dirData1=per4; %папка с данными о транзисторах
+            choice_tran=per1;
+            choice_tem=per2;
+            choice_deviation=per3;
+
+            clear filelist;
+            filelist = dir(fullfile(dirData1, '**\*.*'));  
+filelist = filelist(~[filelist.isdir]); 
+
+
+
+choice_tem_d=str2double(choice_tem(1:end-1));
+
+le=length(filelist);
+flag_choice=1;
+now_tran='';
+now_temp='';
+mas_tran=[];
+
+
+                    
+                    app.h_exp_idvg = [];
+                    app.h_exp_idvd = [];
+                    app.h_spice_idvg = [];
+                    app.h_spice_idvd = [];
+                    app.OutputBox.Items = {};
+                    app.TransferBox.Items = {};
+                    app.data = struct("Name",'',"Meas",[],"Polarity",'',"Number",0,"Date",'',"Temp",'');
+                    app.data.Meas = struct("Type",'',"Values",[],"Start",0.0,"Stop",0.0,"Step",0.0,"Num",0);
+                    app.data.Meas.Values = struct("XY",[],"X_value",'',"Y_value",'');
+
+
+for j=1:le
+    trans_len=length(filelist(j).name);
+    if (trans_len>4) & (strcmp(filelist(j).name(trans_len-3:trans_len), '.mdm'))
+        ti=findstr(filelist(j).name,'~');
+        if (length(ti) == 3) 
+            ti1=filelist(j).name(ti(3)-4:ti(3)-1);
+            %k1 = find(Trans==filelist(j).name(ti(1)+1:ti(2)-1),1);
+            %k2 = find(Trans==filelist(j).name(ti(3)+1:ti(3)+4),1);
+            if length(filelist(j).name)>5 & ti1 ~= 'kink'& ti1 ~= 'test'
+                filename=filelist(j).name;
+                s1='~';
+                p=findstr(filename,s1);
+                p1=filename(p(1)+1:p(2)-1); %Название транзистора
+                p2=filename(1:p(1)-1); %Номер структуры
+                p3 = filename(p(3)-4:p(3)-1); %Тип эксперемента
+                p4=filename(ti(3)+1:ti(3)+4);%Температура 
+                p4_d=str2double(p4(1:end-1));
+                if strcmp(p1,choice_tran)==1 & abs(choice_tem_d-p4_d)<=choice_deviation & (flag_choice==1 || strcmp(now_tran,p2)==0 ||  strcmp(now_temp,p4)==0)
+                 
+                    if flag_choice==1
+                        app.data(end).Name=p1;
+                        app.ind_avg=length(app.data);
+                        app.data(end+1).Name=p1;
+                        app.ind_spice=length(app.data);
+                    end
+                    app.data(end+1).Name=p1;
+
+                    flag_choice=0;
+                    now_tran=p2;
+                    now_temp=p4;
+
+                    Set_data1(app,filename,filelist(j).folder);
+                    %mass_tran(end+1)=filename;
+                    flag_k=0;
+                    itpor=j;
+                    while (flag_k==0 & itpor<le)
+                        itpor=itpor+1;
+                        trans_len_=length(filelist(itpor).name);
+                        if (trans_len_>4) & (strcmp(filelist(itpor).name(trans_len_-3:trans_len_), '.mdm'))
+                               ti_=findstr(filelist(itpor).name,'~');
+                               if (length(ti_) == 3) 
+                                    ti1=filelist(itpor).name(ti_(3)-4:ti_(3)-1);
+                                    if length(filelist(itpor).name)>5 & ti1 ~= 'kink'& ti1 ~= 'test'
+
+                                        filename_=filelist(itpor).name;
+                                        s1_='~';
+                                        p_=findstr(filename_,s1);
+                                        p1_=filename_(p_(1)+1:p_(2)-1); %Название транзистора
+                                        p2_=filename_(1:p_(1)-1); %Номер структуры
+                                        p3_ = filename_(p_(3)-4:p_(3)-1); %Тип эксперемента
+                                        p4_=filename_(ti_(3)+1:ti_(3)+4);%Температура 
+                                        p4_d_=str2double(p4_(1:end-1));
+                                        if strcmp(p1_,p1)==1 & p4_d_==p4_d & strcmp(p2_,p2)==1 
+                                            Set_data1(app,filename_,filelist(itpor).folder);
+                                            flag_k=1;
+                                        end
+                                    end
+                               end
+                        end
+
+                    end
+                    if flag_k==0
+                         app.data(end)=[];
+                    end
+%                 if  strcmp(p1,choice_tran)==1 & abs(choice_tem_d-p4_d)<=choice_deviation 
+%                     set_data(filename,filelist(j).folder);
+%end   
+    end
+        end
+    end
+    end
+end
+
+for rt=3:length(app.data)
+    app.data(rt).Meas(3)=app.data(rt).Meas(1);
+    app.data(rt).Meas(1)=app.data(rt).Meas(2);
+    app.data(rt).Meas(2)=app.data(rt).Meas(3);
+    app.data(rt).Meas(3)=[];
+end
+
+          
+
+
+
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            for n = 1: length(app.data(end).Number)
+            %app.data(n)=[];
+            end
+
+            %app.OPTI_X=app.data(3).Meas(1).Values(1).XY(:,1);
+ 
+            plot_ind_idvg = 1;
+            plot_ind_idvd = 1;
+            app.exp_idvg = [];
+            app.exp_idvd = [];
+
+
+
+    %Начальные значения для шага напряжения среднего среднего
+    app.idvgSpinner.Value=app.data(3).Meas(1).vg_diap.Step;
+    app.idvdSpinner.Value=app.data(3).Meas(2).vd_diap.Step;
+
+    app.idvgEditField.Value=app.data(3).Meas(1).vg_diap.Num;
+    app.idvdEditField.Value=app.data(3).Meas(2).vd_diap.Num;
+
+    % Заполняем характеристики
+            for i = 1:length(app.data(3).Meas)
+                    for j = 1:length(app.data(3).Meas(i).Values)
+                        %app.h_exp(plot_ind,i) = plot(app.UIAxes_Transfer,app.data(1).Meas(i).Values(j).XY(:,1),app.data(1).Meas(i).Values(j).XY(:,2),'.');
+                        if i == 1
+                            app.h_exp_idvg(plot_ind_idvg) = plot(app.UIAxes_Transfer,app.data(3).Meas(i).Values(j).XY(:,1),app.data(3).Meas(i).Values(j).XY(:,2),'.r');
+                            hold(app.UIAxes_Transfer, 'on');
+                            app.TransferBox.Items = [app.TransferBox.Items,string(app.data(3).Meas(i).Values(j).Param)];
+                            app.TransferParam(plot_ind_idvg) = app.data(3).Meas(1).Values(j).Param;
+    % %                         отвечает за заполнение легенды
+                            set(app.h_exp_idvg(plot_ind_idvg),'DisplayName',string(app.data(3).Meas(i).Values(j).Param));
+                            plot_ind_idvg = plot_ind_idvg + 1;
+                        else
+                            app.h_exp_idvd(plot_ind_idvd) = plot(app.UIAxes_Output,app.data(3).Meas(i).Values(j).XY(:,1),app.data(3).Meas(i).Values(j).XY(:,2),'.r');
+                            hold(app.UIAxes_Output, 'on');
+                            app.OutputBox.Items = [app.OutputBox.Items,string(app.data(3).Meas(i).Values(j).Param)];
+                            app.OutputParam(plot_ind_idvd) = string(app.data(3).Meas(i).Values(j).Param);
+                            set(app.h_exp_idvd(plot_ind_idvd),'DisplayName',string(app.data(3).Meas(i).Values(j).Param));
+                            plot_ind_idvd = plot_ind_idvd + 1;
+                        end
+                        app.data(3).Meas(i).Values(j).XY(:,3)=missing;
+                    end
+                   cla(app.UIAxes_Transfer);
+                   cla(app.UIAxes_Output);
+            end
+    %                 legend(app.UIAxes_Transfer,'show');
+    %                 legend(app.UIAxes_Output,'show');
+            plot_ind_idvg = 1;
+            plot_ind_idvd = 1;
+
+            % ПОТОМ РАСКОММЕНТИТЬ! 
+            % Заполняем структуры
+            for n = 3:length(app.data)  
+                for i = 1:length(app.data(n).Meas)
+                    if i == 1
+                        app.exp_idvg(plot_ind_idvg) = plot(app.UIAxes_Transfer,app.data(n).Meas(i).Values(1).XY(:,1),app.data(n).Meas(i).Values(1).XY(:,2),'.');
+                        hold(app.UIAxes_Transfer, 'on');
+                        app.Transfer_Str.Items = [app.Transfer_Str.Items,strcat(string(n-2),')_',app.data(n).Number,'_',app.data(n).Temp)];%  Что видит пользователь % МЕНЯЛИ 07.02
+                        app.StrucParam(plot_ind_idvg) = n; % %% c чем сравнивается в chek
+                        set(app.exp_idvg(plot_ind_idvg),'DisplayName',string(n));
+                        plot_ind_idvg = plot_ind_idvg + 1;
+                    end
+                    if i == 2
+                        app.exp_idvd(plot_ind_idvd) = plot(app.UIAxes_Output,app.data(n).Meas(i).Values(j).XY(:,1),app.data(n).Meas(i).Values(j).XY(:,2),'.');
+                        hold(app.UIAxes_Output, 'on');
+                        app.Output_Str.Items = [app.Output_Str.Items,strcat(string(n-2),')_',app.data(n).Number,'_',app.data(n).Temp)]; %  Что видит пользователь
+                        app.StrucParam_output(plot_ind_idvd) = n; %n  %% c чем сравнивается в chek
+                        set(app.exp_idvd(plot_ind_idvd),'DisplayName',string(n));
+                        plot_ind_idvd = plot_ind_idvd + 1;
+                    end
+                    app.data(n).Meas(i).Values(1).XY(:,3)=missing;
+                end
+                cla(app.UIAxes_Transfer);
+                cla(app.UIAxes_Output);
+            end
+            app.count_str = length(app.data); %присваиваем переменной count_str значение = длине структуры (в нашем случае = 4)
+            % app.ind_avg=app.count_str+1;%задаем индекс для 5 структуры (структуры для среднего)
+            % app.ind_spice=app.count_str+2;%задаем индекс для 6 структуры (структуры для spice) 
+            legend(app.UIAxes_Transfer,'show');
+            legend(app.UIAxes_Output,'show');
+            app.TransferBox.Enable = true;
+            app.OutputBox.Enable = true;
+            app.Label_TransferBox_3.Enable = true;
+            app.Label_OutputBox.Enable = true;
+            %app.Label_party_number.Visible = true;           
+            %app.Transfer_Str.Value = app.Transfer_Str.Items;
+            app.Transfer_Str.Enable = true;
+            %app.Output_Str.Value = app.Output_Str.Items; %выбраны все сразу
+            app.Output_Str.Enable = true;
+            app.Label_TransferBox_4.Enable = true;
+            app.Label_TransferBox_5.Enable = true;
+        end 
+
+
+        function Set_data1(app,filename,way)
+                    clear Y;
+                    clear p;
+                    clear u;
+                    clear fileID;
+
+                s1='~';
+                p=findstr(filename,s1);
+                p1=filename(p(1)+1:p(2)-1); %Название транзистора
+                p2=filename(1:p(1)-1); %Номер структуры
+                p3 = filename(p(3)-4:p(3)-1); %Тип эксперемента
+                p4=filename(p(3)+1:p(3)+4);%Температура 
+                    
+                flag=0;%Флаг означающий что необходимо записывать данные XY
+
+                    s1='~';
+                    p=findstr(filename,s1); 
+                    folder=strcat(way,'\',filename); %путь +имя файла
+                    fileID = fopen(folder);
+
+                    i=1;
+                    while ~feof(fileID)
+                        u(i) = string(fgetl(fileID));
+                        i=i+1;
+                    end
+
+                    Y = cell(length(u), 12);
+
+                    for i = 1:length(u)
+                        k = strsplit(u(i));
+                        for j1=1:length(k)
+                            Y(i,j1) = cellstr(k(j1));
+                        end
+                    end
+
+       
+name_str{1,4} = 'vg';
+name_str{2,4} = 'vd';
+
+app.data(end).Date = date; %Дата
+app.data(end).Name = p1; %Установка времени
+app.data(end).Number = p2; %Установка номера
+app.data(end).Temp = p4;
+app.data(end).Meas(end+1).Type = p3;
+app.data(end).Meas(end).Values = [];
+
+for i = 1:length(Y)
+    if (string(Y{i,2})=="TYPE")
+        if (string(Y{i,3})=='"1"')
+            app.data(end).Polarity = 'n';
+        else
+            app.data(end).Polarity = 'p'; 
+        end
+    end
+
+    if (string(Y{i,2})=='vg')
+        app.data(end).Meas(end).vg_diap.Start = str2double(Y{i,10});
+        app.data(end).Meas(end).vg_diap.Stop = str2double(Y{i,11});
+        app.data(end).Meas(end).vg_diap.Step = str2double(Y{i,13});
+        app.data(end).Meas(end).vg_diap.Num = str2double(Y{i,12});
+    end
+
+    if (string(Y{i,2})=='vd')
+        app.data(end).Meas(end).vd_diap.Start = str2double(Y{i,10});
+        app.data(end).Meas(end).vd_diap.Stop = str2double(Y{i,11});
+        app.data(end).Meas(end).vd_diap.Step = str2double(Y{i,13});
+        app.data(end).Meas(end).vd_diap.Num = str2double(Y{i,12});
+    end
+
+    
+    if (string(Y{i,2})=='ICCAP_VAR')
+        if((string(Y{i,3})=='vg') & (app.data(end).Meas(end).Type == 'idvd'))
+            app.data(end).Meas(end).Values(end+1).Param = str2double(Y{i,4});
+            j=1;
+        end
+
+        if((string(Y{i,3})=='vd') & (app.data(end).Meas(end).Type == 'idvg'))
+            app.data(end).Meas(end).Values(end+1).Param = str2double(Y{i,4});
+            j=1;
+        end
+    end   
+
+    if (string(Y{i,1})=="END_DB")
+        flag=0;
+        
+    end
+
+    %Заполнение данных
+    if(flag==1)
+        app.data(end).Meas(end).Values(end).XY(j,1) = str2double(Y{i,2});
+        app.data(end).Meas(end).Values(end).XY(j,2) = str2double(Y{i,3});
+        j = j + 1;
+    end
+
+   if (string(Y{i,2})=="#vd" | string(Y{i,2})=="#vg")
+        flag=1;
+   end
+
+    if (string(Y{i,1})=="END_DB")
+        flag=0;
+    end
+end
+        end
+        
+        
+    end
+
+
+    % Callbacks that handle component events
+    methods (Access = private)
+
+        % Code that executes after component creation
+        function startupFcn(app, n)
+            app.Menu_settings.Separator = 'on';
+            app.Table_changelist = [];
+            
+            %Инициализация параметров
+            initialization(app,'Initial_params.txt');
+        end
+
+        % Value changed function: TransferBox
+        function TransferBoxValueChanged(app, event)
+            value = app.TransferBox.Value;
+            cla(app.UIAxes_Transfer);
+            app.check = ismember(string(app.TransferParam),value);
+            app.TRANSFER_flag = 1; %%% флаг для функции Paint, строим для Перкдаточной хар-ки
+            Paint1(app,app.check);
+        end
+
+        % Value changed function: OutputBox
+        function OutputBoxValueChanged(app, event)
+            value = app.OutputBox.Value; 
+            cla(app.UIAxes_Output);
+            app.check_2 = ismember(string(app.OutputParam),value);
+            app.OUT_flag = 1 ; % флаг для функции Paint, строим по выходной хар-ки
+            Paint1_out(app,app.check_2);     
+        end
+
+        % Value changed function: Transfer_logX_Check
+        function Transfer_logX_CheckValueChanged(app, event)
+            value = app.Transfer_logX_Check.Value;
+            if value
+                app.UIAxes_Transfer.XScale = "log";
+            else
+                app.UIAxes_Transfer.XScale = "linear";
+            end
+        end
+
+        % Value changed function: Transfer_logY_Check
+        function Transfer_logY_CheckValueChanged(app, event)
+            value = app.Transfer_logY_Check.Value;
+            if value
+                app.UIAxes_Transfer.YScale = "log";
+            else
+                app.UIAxes_Transfer.YScale = "linear";
+            end
+        end
+
+        % Value changed function: Output_logX_Check
+        function Output_logX_CheckValueChanged(app, event)
+            value = app.Output_logX_Check.Value;
+            if value
+                app.UIAxes_Output.XScale = "log";
+            else
+                app.UIAxes_Output.XScale = "linear";
+            end
+        end
+
+        % Value changed function: Output_logY_Check
+        function Output_logY_CheckValueChanged(app, event)
+            value = app.Output_logY_Check.Value;
+            if value
+                app.UIAxes_Output.YScale = "log";
+            else
+                app.UIAxes_Output.YScale = "linear";
+            end
+        end
+
+        % Close request function: UIFigure
+        function UIFigureCloseRequest(app, event)
+            delete(app.Param_window)
+            delete(app)
+        end
+
+        % Callback function
+        function ParamButtonPushed(app, event)
+            app.ParamButton.Enable = "on";
+            app.UITable.Enable = 'on';
+            app.Param_window = Param_Table_Arina(app);
+        end
+
+        % Cell edit callback: UITable
+        function UITableCellEdit(app, event)
+            indices = event.Indices;
+            %newData = event.NewData;
+            app.Table_changelist(end+1,:) = [indices(1),indices(2)];
+        end
+
+        % Value changed function: Transfer_Str
+        function Transfer_StrValueChanged(app, event)
+           value5 = app.Transfer_Str.Value;
+            cla(app.UIAxes_Transfer);
+
+            value6=[];
+            iter=1;
+            for k1=1:length(value5)
+                if strcmp(string(value5{k1}),'Среднее')==1
+                    value6(iter)=string('1');
+                    iter=iter+1;
+
+                elseif strcmp(string(value5{k1}),'Spice')==1
+                    value6(iter)=string('2');
+                    iter=iter+1;
+                else
+                    qwe=string(value5{k1});
+                    qwe1=qwe{1,1};
+                    ll=length(qwe1);
+                    if ll>2
+                        ps=findstr(qwe1,')');
+                        prom_zna=qwe1(1:ps(1)-1);
+                        prom_zna=str2double(prom_zna);
+                        prom_zna=prom_zna+2;
+                        prom_zna=num2str(prom_zna);
+                        value6(iter)=string(prom_zna);
+                        iter=iter+1;
+
+                    end
+                end
+            end
+            value6=string(value6);
+            app.check_struct = ismember(string(app.StrucParam),value6);
+            app.value6_=value6;
+            
+            Paint1(app,app.check);
+        end
+
+        % Value changed function: Output_Str
+        function Output_StrValueChanged(app, event)
+            value2 = app.Output_Str.Value;
+            cla(app.UIAxes_Output);
+            
+            
+            value3=[];
+            iter=1;
+            for k1=1:length(value2)
+                if strcmp(string(value2{k1}),'Среднее')==1
+                    value3(iter)=string('1');
+                    iter=iter+1;
+
+                elseif strcmp(string(value2{k1}),'Spice')==1
+                    value3(iter)=string('2');
+                    iter=iter+1;
+                else
+                    qwe=string(value2{k1});
+                    qwe1=qwe{1,1};
+                    ll=length(qwe1);
+                    if ll>2
+                        ps=findstr(qwe1,')');
+                        prom_zna=qwe1(1:ps(1)-1);
+                        prom_zna=str2double(prom_zna);
+                        prom_zna=prom_zna+2;
+                        prom_zna=num2str(prom_zna);
+                        value3(iter)=string(prom_zna);
+                        iter=iter+1;
+
+                    end
+                end
+            end
+            value3=string(value3);
+            app.check_struct_output = ismember(string(app.StrucParam_output),value3);
+            app.value3_=value3;
+            %disp(value6);
+            Paint1_out(app,app.check_2);
+        end
+
+        % Callback function
+        function Button_for_open_tablePushed(app, event)
+            app.Button_for_open_table.Enable = "on";
+            app.UITable.Enable = 'on';
+            app.Param_window = Param_Table_Big(app);
+        end
+
+        % Menu selected function: Menu_settings
+        function Menu_settingsSelected(app, event)
+            app.UITable.Enable = 'on';
+            app.Param_window = Menu_settings(app);            
+        end
+
+        % Menu selected function: Menu_average
+        function Menu_averageSelected(app, event)
+            app.exist_avg = app.exist_avg + 1;
+            AVG1(app);
+            %app.exist_avg =1; % флаг для таблицы, если среднее подсчитано (=1), можно считать параметры.             
+        end
+
+        % Menu selected function: Menu_optimization
+        function Menu_optimizationSelected(app, event)
+          
+                
+                app.Param_window = diap(app);
+            %end            
+        end
+
+        % Menu selected function: Menu_big_table
+        function Menu_big_tableSelected(app, event)
+        
+            app.Param_window = Param_Table_Big(app);            
+        end
+
+        % Menu selected function: Menu_params
+        function Menu_paramsSelected(app, event)
+            Params(app,app.data);%запускает функцию расчета начальных параметров    
+            app.exist_params = 1;
+        end
+
+        % Menu selected function: Menu_spice
+        function Menu_spiceSelected(app, event)
+             %app.spice_model(str2double(cellstr(string(app.UITable.Data(:,4)))),app.OPTI_X);
+             %%МЕНЯЛИ 25.03
+             app.OPTI_X=app.data(1).Meas(1).Values(1).XY(:,1);
+             app.OPTI_Y=app.data(1).Meas(1).Values(1).XY(:,2);
+             app.spice_model(str2double(cellstr(string(app.UITable.Data(:,4)))),app.data(1).Meas(1).Values(1).XY(:,1));
+        end
+
+        % Menu selected function: Menu
+        function MenuSelected(app, event)
+            clear app.data;
+            app.exist_avg=0;
+            app.exist_spice=0;
+            app.Param_window = select_menu(app);
+        end
+
+        % Value changed function: idvgSpinner
+        function idvgSpinnerValueChanged(app, event)
+            app.exist_avg = app.exist_avg + 1;
+            AVG1(app);
+        end
+
+        % Value changed function: idvdSpinner
+        function idvdSpinnerValueChanged(app, event)
+            app.exist_avg = app.exist_avg + 1;
+            AVG1(app);
+        end
+
+        % Value changed function: idvgEditField
+        function idvgEditFieldValueChanged(app, event)
+            app.exist_avg = app.exist_avg + 1;
+            AVG(app);
+        end
+
+        % Value changed function: idvdEditField
+        function idvdEditFieldValueChanged(app, event)
+            app.exist_avg = app.exist_avg + 1;
+            AVG(app);
+        end
+    end
+
+    % Component initialization
+    methods (Access = private)
+
+        % Create UIFigure and components
+        function createComponents(app)
+
+            % Create UIFigure and hide until all components are created
+            app.UIFigure = uifigure('Visible', 'off');
+            app.UIFigure.AutoResizeChildren = 'off';
+            app.UIFigure.Position = [100 100 1454 693];
+            app.UIFigure.Name = 'UI Figure';
+            app.UIFigure.CloseRequestFcn = createCallbackFcn(app, @UIFigureCloseRequest, true);
+            app.UIFigure.WindowState = 'fullscreen';
+
+            % Create Menu_settings
+            app.Menu_settings = uimenu(app.UIFigure);
+            app.Menu_settings.MenuSelectedFcn = createCallbackFcn(app, @Menu_settingsSelected, true);
+            app.Menu_settings.Text = 'Настройки   ';
+
+            % Create Menu
+            app.Menu = uimenu(app.UIFigure);
+            app.Menu.MenuSelectedFcn = createCallbackFcn(app, @MenuSelected, true);
+            app.Menu.Text = 'Выбор транзистора';
+
+            % Create Menu_average
+            app.Menu_average = uimenu(app.UIFigure);
+            app.Menu_average.MenuSelectedFcn = createCallbackFcn(app, @Menu_averageSelected, true);
+            app.Menu_average.Text = 'Вычисление среднего   ';
+
+            % Create Menu_optimization
+            app.Menu_optimization = uimenu(app.UIFigure);
+            app.Menu_optimization.MenuSelectedFcn = createCallbackFcn(app, @Menu_optimizationSelected, true);
+            app.Menu_optimization.Text = 'Оптимизация   ';
+
+            % Create Menu_big_table
+            app.Menu_big_table = uimenu(app.UIFigure);
+            app.Menu_big_table.MenuSelectedFcn = createCallbackFcn(app, @Menu_big_tableSelected, true);
+            app.Menu_big_table.Text = 'Общая таблица параметров   ';
+
+            % Create Menu_params
+            app.Menu_params = uimenu(app.UIFigure);
+            app.Menu_params.MenuSelectedFcn = createCallbackFcn(app, @Menu_paramsSelected, true);
+            app.Menu_params.Text = 'Расчет параметров   ';
+
+            % Create Menu_spice
+            app.Menu_spice = uimenu(app.UIFigure);
+            app.Menu_spice.MenuSelectedFcn = createCallbackFcn(app, @Menu_spiceSelected, true);
+            app.Menu_spice.Text = 'Моделирование Spice';
+
+            % Create UIAxes_Transfer
+            app.UIAxes_Transfer = uiaxes(app.UIFigure);
+            title(app.UIAxes_Transfer, 'Передаточная характеристика')
+            xlabel(app.UIAxes_Transfer, 'Ugs, V')
+            ylabel(app.UIAxes_Transfer, 'Id, A')
+            app.UIAxes_Transfer.Position = [402 362 582 300];
+
+            % Create UIAxes_Output
+            app.UIAxes_Output = uiaxes(app.UIFigure);
+            title(app.UIAxes_Output, 'Выходные характеристики')
+            xlabel(app.UIAxes_Output, 'Uds, V')
+            ylabel(app.UIAxes_Output, 'Id, A')
+            app.UIAxes_Output.PlotBoxAspectRatio = [2.18367346938776 1 1];
+            app.UIAxes_Output.Position = [402 44 582 300];
+
+            % Create Transfer_logX_Check
+            app.Transfer_logX_Check = uicheckbox(app.UIFigure);
+            app.Transfer_logX_Check.ValueChangedFcn = createCallbackFcn(app, @Transfer_logX_CheckValueChanged, true);
+            app.Transfer_logX_Check.Text = 'logX';
+            app.Transfer_logX_Check.Position = [930 352 46 22];
+
+            % Create Transfer_logY_Check
+            app.Transfer_logY_Check = uicheckbox(app.UIFigure);
+            app.Transfer_logY_Check.ValueChangedFcn = createCallbackFcn(app, @Transfer_logY_CheckValueChanged, true);
+            app.Transfer_logY_Check.Text = 'logY';
+            app.Transfer_logY_Check.Position = [488 640 46 22];
+
+            % Create Output_logY_Check
+            app.Output_logY_Check = uicheckbox(app.UIFigure);
+            app.Output_logY_Check.ValueChangedFcn = createCallbackFcn(app, @Output_logY_CheckValueChanged, true);
+            app.Output_logY_Check.Text = 'logY';
+            app.Output_logY_Check.Position = [488 322 46 22];
+
+            % Create Output_logX_Check
+            app.Output_logX_Check = uicheckbox(app.UIFigure);
+            app.Output_logX_Check.ValueChangedFcn = createCallbackFcn(app, @Output_logX_CheckValueChanged, true);
+            app.Output_logX_Check.Text = 'logX';
+            app.Output_logX_Check.Position = [930 33 46 22];
+
+            % Create ErrLabel_idvg
+            app.ErrLabel_idvg = uilabel(app.UIFigure);
+            app.ErrLabel_idvg.Position = [984 376 28 22];
+            app.ErrLabel_idvg.Text = 'Err: ';
+
+            % Create ErrLabel_idvd
+            app.ErrLabel_idvd = uilabel(app.UIFigure);
+            app.ErrLabel_idvd.Position = [984 59 28 22];
+            app.ErrLabel_idvd.Text = 'Err: ';
+
+            % Create UITable
+            app.UITable = uitable(app.UIFigure);
+            app.UITable.ColumnName = {'Name'; 'Min'; 'Max'; 'Current'};
+            app.UITable.RowName = {};
+            app.UITable.ColumnSortable = [true false false true];
+            app.UITable.CellEditCallback = createCallbackFcn(app, @UITableCellEdit, true);
+            app.UITable.Position = [20 81 361 263];
+
+            % Create OutputBox
+            app.OutputBox = uilistbox(app.UIFigure);
+            app.OutputBox.Items = {};
+            app.OutputBox.Multiselect = 'on';
+            app.OutputBox.ValueChangedFcn = createCallbackFcn(app, @OutputBoxValueChanged, true);
+            app.OutputBox.Enable = 'off';
+            app.OutputBox.Position = [1118 80 99 237];
+            app.OutputBox.Value = {};
+
+            % Create Output_Str
+            app.Output_Str = uilistbox(app.UIFigure);
+            app.Output_Str.Items = {};
+            app.Output_Str.Multiselect = 'on';
+            app.Output_Str.ValueChangedFcn = createCallbackFcn(app, @Output_StrValueChanged, true);
+            app.Output_Str.Enable = 'off';
+            app.Output_Str.Position = [1006 80 100 237];
+            app.Output_Str.Value = {};
+
+            % Create TransferBox
+            app.TransferBox = uilistbox(app.UIFigure);
+            app.TransferBox.Items = {};
+            app.TransferBox.Multiselect = 'on';
+            app.TransferBox.ValueChangedFcn = createCallbackFcn(app, @TransferBoxValueChanged, true);
+            app.TransferBox.Enable = 'off';
+            app.TransferBox.Position = [1117 400 100 237];
+            app.TransferBox.Value = {};
+
+            % Create Transfer_Str
+            app.Transfer_Str = uilistbox(app.UIFigure);
+            app.Transfer_Str.Items = {};
+            app.Transfer_Str.Multiselect = 'on';
+            app.Transfer_Str.ValueChangedFcn = createCallbackFcn(app, @Transfer_StrValueChanged, true);
+            app.Transfer_Str.Enable = 'off';
+            app.Transfer_Str.Position = [1005 400 100 237];
+            app.Transfer_Str.Value = {};
+
+            % Create Label_TransferBox_3
+            app.Label_TransferBox_3 = uilabel(app.UIFigure);
+            app.Label_TransferBox_3.HorizontalAlignment = 'right';
+            app.Label_TransferBox_3.Enable = 'off';
+            app.Label_TransferBox_3.Position = [1002 636 102 22];
+            app.Label_TransferBox_3.Text = {'Выбор структуры'; ''};
+
+            % Create Label_TransferBox_4
+            app.Label_TransferBox_4 = uilabel(app.UIFigure);
+            app.Label_TransferBox_4.HorizontalAlignment = 'right';
+            app.Label_TransferBox_4.Enable = 'off';
+            app.Label_TransferBox_4.Position = [1111 636 112 22];
+            app.Label_TransferBox_4.Text = {'Выбор параметров'; ''};
+
+            % Create Label_TransferBox_5
+            app.Label_TransferBox_5 = uilabel(app.UIFigure);
+            app.Label_TransferBox_5.HorizontalAlignment = 'right';
+            app.Label_TransferBox_5.Enable = 'off';
+            app.Label_TransferBox_5.Position = [1004 322 102 22];
+            app.Label_TransferBox_5.Text = {'Выбор структуры'; ''};
+
+            % Create Label_OutputBox
+            app.Label_OutputBox = uilabel(app.UIFigure);
+            app.Label_OutputBox.HorizontalAlignment = 'right';
+            app.Label_OutputBox.Enable = 'off';
+            app.Label_OutputBox.Position = [1111 322 112 22];
+            app.Label_OutputBox.Text = {'Выбор параметров'; ''};
+
+            % Create ErrValue_idvg
+            app.ErrValue_idvg = uilabel(app.UIFigure);
+            app.ErrValue_idvg.Position = [1008 352 89 43];
+            app.ErrValue_idvg.Text = '';
+
+            % Create ErrValue_idvd
+            app.ErrValue_idvd = uilabel(app.UIFigure);
+            app.ErrValue_idvd.Position = [1011 23 89 43];
+            app.ErrValue_idvd.Text = '';
+
+            % Create Label
+            app.Label = uilabel(app.UIFigure);
+            app.Label.FontSize = 20;
+            app.Label.Position = [93 557 216 38];
+            app.Label.Text = 'Транзистор не выбран';
+
+            % Create idvgSpinnerLabel
+            app.idvgSpinnerLabel = uilabel(app.UIFigure);
+            app.idvgSpinnerLabel.HorizontalAlignment = 'center';
+            app.idvgSpinnerLabel.Position = [1227 521 218 22];
+            app.idvgSpinnerLabel.Text = 'Количекство точек для среднего idvg';
+
+            % Create idvgSpinner
+            app.idvgSpinner = uispinner(app.UIFigure);
+            app.idvgSpinner.Step = 0.001;
+            app.idvgSpinner.Limits = [1e-10 Inf];
+            app.idvgSpinner.ValueChangedFcn = createCallbackFcn(app, @idvgSpinnerValueChanged, true);
+            app.idvgSpinner.Position = [1286 493 100 22];
+            app.idvgSpinner.Value = 0.01;
+
+            % Create idvdLabel
+            app.idvdLabel = uilabel(app.UIFigure);
+            app.idvdLabel.HorizontalAlignment = 'center';
+            app.idvdLabel.Position = [1233 203 212 22];
+            app.idvdLabel.Text = 'Количекство точек для среднего idvd';
+
+            % Create idvdSpinner
+            app.idvdSpinner = uispinner(app.UIFigure);
+            app.idvdSpinner.Step = 0.001;
+            app.idvdSpinner.Limits = [1e-11 Inf];
+            app.idvdSpinner.ValueChangedFcn = createCallbackFcn(app, @idvdSpinnerValueChanged, true);
+            app.idvdSpinner.Position = [1289 171 100 22];
+            app.idvdSpinner.Value = 0.01;
+
+            % Create idvgEditFieldLabel
+            app.idvgEditFieldLabel = uilabel(app.UIFigure);
+            app.idvgEditFieldLabel.HorizontalAlignment = 'right';
+            app.idvgEditFieldLabel.Position = [1233 430 212 22];
+            app.idvgEditFieldLabel.Text = 'Количекство точек для среднего idvg';
+
+            % Create idvgEditField
+            app.idvgEditField = uieditfield(app.UIFigure, 'numeric');
+            app.idvgEditField.Limits = [2 Inf];
+            app.idvgEditField.ValueChangedFcn = createCallbackFcn(app, @idvgEditFieldValueChanged, true);
+            app.idvgEditField.Position = [1289 400 100 22];
+            app.idvgEditField.Value = 2;
+
+            % Create idvgEditField_2Label
+            app.idvgEditField_2Label = uilabel(app.UIFigure);
+            app.idvgEditField_2Label.HorizontalAlignment = 'right';
+            app.idvgEditField_2Label.Position = [1233 129 212 22];
+            app.idvgEditField_2Label.Text = 'Количекство точек для среднего idvg';
+
+            % Create idvdEditField
+            app.idvdEditField = uieditfield(app.UIFigure, 'numeric');
+            app.idvdEditField.Limits = [2 Inf];
+            app.idvdEditField.ValueChangedFcn = createCallbackFcn(app, @idvdEditFieldValueChanged, true);
+            app.idvdEditField.Position = [1289 93 100 22];
+            app.idvdEditField.Value = 2;
+
+            % Show the figure after all components are created
+            app.UIFigure.Visible = 'on';
+        end
+    end
+
+    % App creation and deletion
+    methods (Access = public)
+
+        % Construct app
+        function app = Params_extraction_final(varargin)
+
+            % Create UIFigure and components
+            createComponents(app)
+
+            % Register the app with App Designer
+            registerApp(app, app.UIFigure)
+
+            % Execute the startup function
+            runStartupFcn(app, @(app)startupFcn(app, varargin{:}))
+
+            if nargout == 0
+                clear app
+            end
+        end
+
+        % Code that executes before app deletion
+        function delete(app)
+
+            % Delete UIFigure when app is deleted
+            delete(app.UIFigure)
+        end
+    end
+end]]></w:t></w:r></w:p></w:body></w:document>
