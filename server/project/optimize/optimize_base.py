@@ -37,7 +37,7 @@ def fstf(s):
             return number * unit_multipliers[prefix]
     return float(s)  # если приставки нет
 
-spicepath = os.path.abspath(os.path.join(os.path.dirname(__file__), "LTspice.exe"))
+spicepath = os.path.abspath(os.path.join(os.path.dirname(__file__), "LTSpice/LTspice.exe"))
 
 class Optimization:
     def __init__(self, userID):
