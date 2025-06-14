@@ -4,3 +4,5 @@ documentation
 tree.txt
 goodDataBases
 docker
+__pycache__
+**/__pycache__
