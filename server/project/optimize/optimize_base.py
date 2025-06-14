@@ -36,7 +36,9 @@ def fstf(s):
             number = float(s[:-len(prefix)])
             return number * unit_multipliers[prefix]
     return float(s)  # если приставки нет
-spicepath = r"LTspice.exe"
+
+spicepath = os.path.abspath(os.path.join(os.path.dirname(__file__), "LTspice.exe"))
+
 class Optimization:
     def __init__(self, userID):
         self.baseName = f'optimize/databases/{userID}_second.db'
